@@ -19,3 +19,5 @@ class Querry(BaseModel):
 def chat(data:Querry):
    answer =  search_and_answer(data.querry)
    return {"answer":answer}
+
+

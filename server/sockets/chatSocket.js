@@ -1,14 +1,39 @@
 import axios from "axios";
+import Conversation from "../models/chatModel.js";
 
 export const chatHandler = (socket) => {
 
   socket.on("querry_sent", async (msg) => {
     try {
       console.log("query reached to server:", msg);
-      // ai logic
+
+      await Conversation.findByIdAndUpdate(
+        msg.conversationId,
+        {
+          $push: {
+            messages: {
+              sender: "user",
+              text: msg.querry,
+            },
+          },
+        }
+      );
       const response = await (axios.post("http://localhost:8000/chat", {
         querry: msg.querry
       }))
+      await Conversation.findByIdAndUpdate(
+        msg.conversationId,
+        {
+          $push: {
+            messages: {
+              sender: "bot",
+              text: response.data.answer,
+            },
+          },
+        }
+      );
+
+      // send to frontend
       socket.emit("answer_received", {
         ai_response: response.data.answer
       });

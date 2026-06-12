@@ -1,20 +1,38 @@
 import express from "express";
 import http from "http";
 import cors from "cors";
-import urlProcessingRouter from "./routes/urlProcessingRouter.js"
+import dotenv from "dotenv";
+import connectDB from "./MongoDB/db.js";
+
+import urlProcessingRouter from "./routes/urlProcessingRouter.js";
+import messagesRouter from "./routes/messagesRouter.js";
+import createConversationRouter from "./routes/createConversationRouter.js";
 import { initSocket } from "./socket.js";
 
-const app = express()
+dotenv.config();
 
-const server = http.createServer(app) 
-initSocket(server);
-app.use(express.json())
+const app = express();
+const server = http.createServer(app);
+
+app.use(express.json());
 app.use(cors());
-const port = 8080;
-app.use('/api',urlProcessingRouter);
-server.listen(port, () => {
-  console.log(`Chatbot server running on port ${port}`);
-});
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
-});
+
+app.use("/api", urlProcessingRouter);
+app.use("/api", messagesRouter);
+app.use("/api", createConversationRouter);
+
+initSocket(server);
+
+const startServer = async () => {
+  await connectDB(); 
+
+  const port = 8080;
+
+  server.listen(port, () => {
+    console.log(
+      `Server running on port ${port}`
+    );
+  });
+};
+
+startServer();

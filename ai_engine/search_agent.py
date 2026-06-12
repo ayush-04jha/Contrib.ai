@@ -44,8 +44,13 @@ def search_and_answer(query):
         }
     ]
     
-    results = list(collection.aggregate(pipeline))
+    print("Query Dim:", len(query_vector))
+
+    doc = collection.find_one()
+    print("Stored Dim:", len(doc["embedding"]))
     
+    results = list(collection.aggregate(pipeline))
+    print(len(results))
     if not results:
         return "No relevant code found in the repository."
 

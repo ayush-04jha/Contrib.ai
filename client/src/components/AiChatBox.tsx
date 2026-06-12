@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import LogoIcon from "./LogoIcon";
 import SendIcon from "./SendIcon";
 import { socket } from "../socket";
+import API from "../../axiosSetup/API";
 
 function AiChatBox() {
 
@@ -12,12 +13,65 @@ function AiChatBox() {
     text: string;
   }
   const [messages, setMessage] = useState<Message[]>([])
+  const [conversationId, setConversationId] = useState<string | null>(null);
   // whenever AiChatBox render on UI this socket connect useeffect  will run and try to connect a wab-socket to the server
+  // functions
+  const fetchMessage = async () => {
+    const response = await API.get("/messages");
+    setMessage(response.data);
+  }
+
+  const sendQuerry = () => {
+
+    console.log("button clicked", messages); // working
+
+    const message: Message = { sender: "user", text: querry }
+    if (!message.text.trim()) return
+    setMessage((prev) => [...prev, message]);
+    socket.emit("querry_sent", { conversationId, querry: message.text })
+    updatequerry("")
+  }
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault(); // prevents newline
+      sendQuerry(); // your send function
+    }
+  };
+  //useEffects 1
+  useEffect(() => {
+  const initConversation = async () => {
+
+    const existingId =
+      localStorage.getItem("conversationId");
+
+    if (existingId) {
+      setConversationId(existingId);
+      return;
+    }
+
+    const res = await API.post("/conversation");
+
+    setConversationId(res.data._id);
+
+    localStorage.setItem(
+      "conversationId",
+      res.data._id
+    );
+  };
+
+  initConversation();
+}, []);
+//useEffects 2
+  useEffect(() => {
+    fetchMessage();
+  }, [])
+
+//useEffects 3
   useEffect(() => {
     socket.connect()
     if (socket.connected) {
-    console.log("Already connected:", socket.id);
-  }
+      console.log("Already connected:", socket.id);
+    }
     socket.on("connect", () => {
       console.log("Connected:", socket.id);
     });
@@ -25,13 +79,12 @@ function AiChatBox() {
     socket.on("disconnect", () => {
       console.log("Disconnected");
     });
-
-
-    return () => {
+      return () => {
       socket.off("connect");
       socket.off("disconnect");
     }
   }, [])
+//useEffects 4
   useEffect(() => {
     const handler = (data: { ai_response: string }) => {
       setMessage((prev) => [
@@ -47,22 +100,6 @@ function AiChatBox() {
     };
   }, []);
 
-  const sendQuerry = () => {
-     
-    console.log("button clicked", messages); // working
-
-    const message: Message = { sender: "user", text: querry }
-    if (!message.text.trim()) return
-    setMessage((prev) => [...prev, message]);
-    socket.emit("querry_sent", { querry: message.text })
-    updatequerry("")
-  }
-  const handleKeyDown = (e:React.KeyboardEvent<HTMLInputElement>) => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault(); // prevents newline
-    sendQuerry(); // your send function
-  }
-};
   return (
     <div className="bg-[#0d0f14] min-h-screen border border-[#1E2530]">
       {/* contrib.ai assistant */}
@@ -92,7 +129,7 @@ function AiChatBox() {
       </div>
       {/* input box */}
       <div className="flex border-2 border-[#1E2530]  items-center justify-around px-4 pr-4 h-[10vh]">
-        <input type="text"  onKeyDown={handleKeyDown} value={querry} onChange={(e) => { updatequerry(e.target.value) }} placeholder="Ask anything about this repo…" className="rounded-2xl pl-3 text-white border-2 border-[#1E2530] min-w-[95%] h-[65%]" />
+        <input type="text" onKeyDown={handleKeyDown} value={querry} onChange={(e) => { updatequerry(e.target.value) }} placeholder="Ask anything about this repo…" className="rounded-2xl pl-3 text-white border-2 border-[#1E2530] min-w-[95%] h-[65%]" />
         {/* <div className="rounded-2xl text-white border-2 border-[#1E2530] min-w-[95%] h-[65%]">Ask anything about this repo…</div> */}
         {/* send button */}
 
