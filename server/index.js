@@ -8,7 +8,7 @@ import urlProcessingRouter from "./routes/urlProcessingRouter.js";
 import messagesRouter from "./routes/messagesRouter.js";
 import createConversationRouter from "./routes/createConversationRouter.js";
 import { initSocket } from "./socket.js";
-
+import repoIssuesRouter from "./routes/repoIssuesRouter.js"
 dotenv.config();
 
 const app = express();
@@ -20,7 +20,7 @@ app.use(cors());
 app.use("/api", urlProcessingRouter);
 app.use("/api", messagesRouter);
 app.use("/api", createConversationRouter);
-
+app.use('/api', repoIssuesRouter);
 initSocket(server);
 
 const startServer = async () => {
