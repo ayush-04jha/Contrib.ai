@@ -13,7 +13,7 @@ function HeroSection() {
         {/* leftpart */}
         <div className=" pr-24 space-y-6 w- pt">
           {/* round icon */}
-          <span className="font-syne-jetBrains border bg-[#1a2035]  text-[#a8ff3e] px-2 border-[#556070] rounded-2xl">now in beta · 12k+ contributors</span>
+          <span className="font-syne-jetBrains border bg-[#1a2035]  text-[#a8ff3e] px-2 border-[#556070] rounded-2xl">discover issues worth solving</span>
           {/* main heading */}
           <div className="pt-[5%]  leading-none h-[60%] ">
             <span className="font-syne-ExtraBold text-[58px] tracking-[-0.03em] text-white ">Open</span>
