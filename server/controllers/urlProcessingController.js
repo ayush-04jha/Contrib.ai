@@ -4,8 +4,9 @@ import Repo from "../models/RepoModel.js"
 
 export const urlprocessor = async (req, res) => {
     try {
+      console.log(req.user);
     const gitHubLink = req.body.link;
-
+    const userId = req.user.userId;
     if (!gitHubLink) {
       return res.status(400).json({
         message: "Github link is required",
@@ -17,6 +18,7 @@ export const urlprocessor = async (req, res) => {
     await Repo.create({
       jobId,
       repoLink: gitHubLink,
+      userId
     });
 
     processRepo(gitHubLink, jobId).catch((err) => {

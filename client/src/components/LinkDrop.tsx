@@ -8,7 +8,7 @@ function LinkDrop() {
   const analyzeUrl = async () => {
     console.log(url_link);
 
-    const res = await API.post("/num", { "link": url_link })
+    const res = await API.post("/num", { "link": url_link})
     console.log(res.data);
     const jobId = res.data.jobId;
     console.log("this is jobId hai:", jobId);

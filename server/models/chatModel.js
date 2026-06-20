@@ -2,14 +2,17 @@ import mongoose from "mongoose";
 import User from "./userModel.js";
 const conversationSchema = new mongoose.Schema(
   {
-    chatId:{
-       type: String
-    },
-    userId: {
+      userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: false, // temporary done false
       index: true,
+    },
+    repoId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Repo",
+      required: true,
+      index: true
     },
 
     title: {

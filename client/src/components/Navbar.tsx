@@ -1,5 +1,21 @@
 import { Hexagon } from "lucide-react";
+import { useEffect, useState } from "react";
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
 function Navbar() {
+    const [user, setUser] = useState<User | null>(null);
+
+useEffect(() => {
+  const storedUser = JSON.parse(
+    localStorage.getItem("user") || "null"
+  );
+
+  setUser(storedUser);
+}, []);
+
     return (
         <div className="bg-[#0d0f14] border-b-2 border-[#1e2530] flex items-center py-5 px-11  justify-between">
             {/* left part */}
@@ -22,9 +38,23 @@ function Navbar() {
 
             </div>
             {/* button */}
-            <button className="bg-[#a8ff3e] rounded-[5px] p-2">
-                Get early access    
-            </button>
+            <div className="flex space-x-1">
+                {
+                    user ? (
+                        <div className="text-white">
+                            {user.name}
+                        </div>
+                    ) : (
+                        <button>
+                            Sign Up
+                        </button>
+                    )
+                }
+                <button className="bg-[#a8ff3e] rounded-[5px] p-2">
+                    Get early access
+                </button>
+            </div>
+
         </div>
     )
 }

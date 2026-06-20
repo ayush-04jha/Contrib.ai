@@ -10,6 +10,11 @@ const RepoSchema = new mongoose.Schema(
         repoLink: {
             type: String,
             required: true
+        },
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true
         }
     },
     {

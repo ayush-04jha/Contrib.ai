@@ -9,6 +9,7 @@ import messagesRouter from "./routes/messagesRouter.js";
 import createConversationRouter from "./routes/createConversationRouter.js";
 import { initSocket } from "./socket.js";
 import repoIssuesRouter from "./routes/repoIssuesRouter.js"
+import signupRouter from "./routes/signupRouter.js"
 dotenv.config();
 
 const app = express();
@@ -20,7 +21,8 @@ app.use(cors());
 app.use("/api", urlProcessingRouter);
 app.use("/api", messagesRouter);
 app.use("/api", createConversationRouter);
-app.use('/api', repoIssuesRouter);
+app.use("/api", repoIssuesRouter);
+app.use("/api",signupRouter)
 initSocket(server);
 
 const startServer = async () => {

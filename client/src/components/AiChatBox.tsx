@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import LogoIcon from "./LogoIcon";
 import SendIcon from "./SendIcon";
 import IssuePanel from "./IssuePanel";
+import HistoryPanel from "./History";
 import { socket } from "../socket";
 import API from "../../axiosSetup/API";
 import { useParams } from "react-router-dom";
@@ -143,7 +144,8 @@ function AiChatBox() {
 
   return (
     <div className="min-h-screen border border-[#1E2530] bg-[#0d0f14]">
-      <div className="grid min-h-screen grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid min-h-screen grid-cols-1 xl:grid-cols-[auto_minmax(0,1fr)_360px]">
+        <HistoryPanel />
         <section className="flex min-h-screen flex-col border-r border-[#1E2530]">
           {/* contrib.ai assistant */}
           <div className="flex gap-3.5 border border-[#1E2530] pl-4">
