@@ -41,11 +41,11 @@ useEffect(() => {
             <div className="flex space-x-1">
                 {
                     user ? (
-                        <div className="text-white">
+                        <div className="text-white border border-red-400 w-15">
                             {user.name}
                         </div>
                     ) : (
-                        <button>
+                        <button className="bg-[#a8ff3e] rounded-[5px] p-2">
                             Sign Up
                         </button>
                     )
