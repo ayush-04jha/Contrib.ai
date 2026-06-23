@@ -52,7 +52,26 @@ export default function SignupPage() {
     JSON.stringify(res.data.user)
   );
 
-  navigate("/chatbox");
+  // Check if user has existing repos (should be 0 for new users)
+  try {
+    const reposRes = await API.get("/user/repos", {
+      headers: {
+        Authorization: `Bearer ${res.data.token}`,
+      },
+    });
+
+    if (reposRes.data?.count > 0) {
+      // User has repos, navigate to chatbox with the first repo
+      const firstRepo = reposRes.data.repos[0];
+      navigate(`/chatbox/${firstRepo.jobId}`);
+    } else {
+      // No repos, navigate to link drop
+      navigate("/pastelink");
+    }
+  } catch (reposErr) {
+    // If checking repos fails, default to link drop
+    navigate("/pastelink");
+  }
 } else {
   setError(
     res.data?.message ||

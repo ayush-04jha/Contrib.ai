@@ -6,23 +6,28 @@ export const chatHandler = (socket) => {
   socket.on("querry_sent", async (msg) => {
     try {
       console.log("query reached to server:", msg);
+      console.log("conversationId:", msg.conversationId, "repoId:", msg.repoId);
 
       if (!msg.repoId) {
         socket.emit("error", { message: "Repo id is missing. Please analyze a repo first." });
         return;
       }
 
-      await Conversation.findByIdAndUpdate(
+      // Ensure repoId is set on the conversation
+      const updatedConversation = await Conversation.findByIdAndUpdate(
         msg.conversationId,
         {
+          $set: { repoId: msg.repoId },
           $push: {
             messages: {
               sender: "user",
               text: msg.querry,
             },
           },
-        }
+        },
+        { returnDocument: 'after' }
       );
+      console.log("Updated conversation with user message, repoId:", updatedConversation?.repoId);
       const response = await (axios.post("http://localhost:8000/chat", {
         querry: msg.querry,
         repo_id: msg.repoId
@@ -30,13 +35,15 @@ export const chatHandler = (socket) => {
       await Conversation.findByIdAndUpdate(
         msg.conversationId,
         {
+          $set: { repoId: msg.repoId },
           $push: {
             messages: {
               sender: "bot",
               text: response.data.answer,
             },
           },
-        }
+        },
+        { returnDocument: 'after' }
       );
 
       // send to frontend

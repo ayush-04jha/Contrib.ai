@@ -1,138 +1,127 @@
-import { useState } from "react";
-import { ChevronDown, ChevronRight, MessageSquare, Clock, FolderOpen } from "lucide-react";
-
-// Dummy data for repos and their conversations
-const dummyRepos = [
-  {
-    id: "1",
-    name: "facebook/react",
-    conversationCount: 3,
-    conversations: [
-      {
-        id: "conv-1",
-        title: "Understanding React Architecture",
-        lastMessage: "The architecture consists of reconciler, renderer, and scheduler...",
-        timestamp: "2 hours ago",
-        messageCount: 12
-      },
-      {
-        id: "conv-2",
-        title: "Component Lifecycle Questions",
-        lastMessage: "useEffect replaces componentDidMount, componentDidUpdate, and componentWillUnmount...",
-        timestamp: "2 days ago",
-        messageCount: 20
-      },
-      {
-        id: "conv-3",
-        title: "Hooks Best Practices",
-        lastMessage: "Always include all dependencies in the useEffect dependency array...",
-        timestamp: "1 week ago",
-        messageCount: 8
-      }
-    ]
-  },
-  {
-    id: "2",
-    name: "vercel/next.js",
-    conversationCount: 2,
-    conversations: [
-      {
-        id: "conv-4",
-        title: "Setup and Installation Guide",
-        lastMessage: "You can install Next.js using npm create next-app or yarn...",
-        timestamp: "5 hours ago",
-        messageCount: 8
-      },
-      {
-        id: "conv-5",
-        title: "SSR vs SSG Configuration",
-        lastMessage: "For SSR use getServerSideProps, for SSG use getStaticProps...",
-        timestamp: "3 days ago",
-        messageCount: 15
-      }
-    ]
-  },
-  {
-    id: "3",
-    name: "tailwindlabs/tailwindcss",
-    conversationCount: 1,
-    conversations: [
-      {
-        id: "conv-6",
-        title: "Good First Issues for Beginners",
-        lastMessage: "Here are some good first issues: #1234, #5678, #9012...",
-        timestamp: "1 day ago",
-        messageCount: 15
-      }
-    ]
-  },
-  {
-    id: "4",
-    name: "jestjs/jest",
-    conversationCount: 1,
-    conversations: [
-      {
-        id: "conv-7",
-        title: "Testing Strategy Discussion",
-        lastMessage: "Jest uses a snapshot testing approach for component testing...",
-        timestamp: "3 days ago",
-        messageCount: 7
-      }
-    ]
-  },
-  {
-    id: "5",
-    name: "axios/axios",
-    conversationCount: 1,
-    conversations: [
-      {
-        id: "conv-8",
-        title: "API Integration Help",
-        lastMessage: "For interceptors, you can use axios.interceptors.request.use()...",
-        timestamp: "1 week ago",
-        messageCount: 11
-      }
-    ]
-  }
-];
+import { useState, useEffect } from "react";
+import { ChevronDown, ChevronRight, MessageSquare, FolderOpen, Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import API from "../../axiosSetup/API";
 
 interface Conversation {
-  id: string;
+  _id: string;
   title: string;
-  lastMessage: string;
-  timestamp: string;
-  messageCount: number;
+  messages: Array<{ sender: string; text: string; createdAt: Date }>;
+  createdAt: string;
 }
 
 interface Repo {
-  id: string;
-  name: string;
-  conversationCount: number;
+  _id: string;
+  jobId: string;
+  repoLink: string;
   conversations: Conversation[];
 }
 
 function RepoConversationSidebar() {
-  const [repos, setRepos] = useState<Repo[]>(dummyRepos);
+  const [repos, setRepos] = useState<Repo[]>([]);
   const [expandedRepos, setExpandedRepos] = useState<Set<string>>(new Set());
-  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingConversations, setLoadingConversations] = useState<Set<string>>(new Set());
+  const navigate = useNavigate();
 
-  const toggleRepoExpand = (repoId: string) => {
+  useEffect(() => {
+    fetchUserRepos();
+  }, []);
+
+  const fetchUserRepos = async () => {
+    try {
+      setLoading(true);
+      const res = await API.get("/user/repos");
+      
+      if (res.data?.success && res.data?.repos) {
+        // Transform repos data to match our interface
+        const transformedRepos = res.data.repos.map((repo: any) => ({
+          _id: repo._id,
+          jobId: repo.jobId,
+          repoLink: repo.repoLink,
+          conversations: [] // Will be fetched when expanded
+        }));
+        
+        setRepos(transformedRepos);
+      }
+    } catch (error) {
+      console.error("Error fetching repos:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchConversationsForRepo = async (jobId: string) => {
+    try {
+      setLoadingConversations(prev => new Set(prev).add(jobId));
+      const res = await API.get(`/conversations/repo/${jobId}`);
+      
+      if (res.data?.conversations) {
+        setRepos(prev => prev.map(repo => 
+          repo.jobId === jobId 
+            ? { ...repo, conversations: res.data.conversations }
+            : repo
+        ));
+      }
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+    } finally {
+      setLoadingConversations(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(jobId);
+        return newSet;
+      });
+    }
+  };
+
+  const toggleRepoExpand = async (repoId: string) => {
     const newExpanded = new Set(expandedRepos);
     if (newExpanded.has(repoId)) {
       newExpanded.delete(repoId);
     } else {
       newExpanded.add(repoId);
+      // Fetch conversations when expanding
+      await fetchConversationsForRepo(repoId);
     }
     setExpandedRepos(newExpanded);
   };
 
-  const selectConversation = (conversationId: string) => {
-    setSelectedConversation(conversationId);
-    // Here you would typically navigate to the selected conversation
-    console.log("Selected conversation:", conversationId);
+  const selectConversation = (jobId: string, conversationId: string) => {
+    navigate(`/chatbox/${jobId}/${conversationId}`);
   };
 
-  const totalConversations = repos.reduce((acc, repo) => acc + repo.conversationCount, 0);
+  const createNewConversation = async (jobId: string) => {
+    try {
+      const res = await API.post("/conversation", { repoId: jobId });
+      const newConversation = res.data;
+      
+      // Update the repos state with the new conversation
+      setRepos(prev => prev.map(repo => 
+        repo.jobId === jobId 
+          ? { ...repo, conversations: [newConversation, ...repo.conversations] }
+          : repo
+      ));
+      
+      // Navigate to the new conversation
+      navigate(`/chatbox/${jobId}/${newConversation._id}`);
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+    }
+  };
+
+  const handleAddRepo = () => {
+    navigate("/pastelink");
+  };
+
+  const extractRepoName = (repoLink: string) => {
+    const match = repoLink.match(/github\.com\/([^/]+)\/([^/]+)/);
+    if (match) {
+      return `${match[1]}/${match[2]}`;
+    }
+    return repoLink;
+  };
+
+  const totalConversations = repos.reduce((acc, repo) => acc + repo.conversations.length, 0);
 
   return (
     <aside className="flex flex-col border-r border-[#1E2530] bg-[#0d0f14] w-80">
@@ -143,9 +132,13 @@ function RepoConversationSidebar() {
             <FolderOpen className="w-4 h-4 text-[#a8ff3e]" />
             <div className="font-syne-Bold text-[13px] text-white">Repositories</div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="text-[12px] text-[#6b7788]">{repos.length} repos</div>
-          </div>
+          <button 
+            onClick={handleAddRepo}
+            className="flex items-center gap-1 text-[#a8ff3e] hover:text-[#bfff6e] text-[11px] font-medium transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add</span>
+          </button>
         </div>
       </div>
 
@@ -168,64 +161,95 @@ function RepoConversationSidebar() {
 
       {/* Repos List */}
       <div className="flex flex-1 flex-col gap-1 overflow-y-auto p-2">
-        {repos.map((repo) => (
-          <div key={repo.id} className="border border-[#1E2530] rounded-[6px] bg-[#11141C] overflow-hidden">
-            {/* Repo Header */}
-            <button
-              onClick={() => toggleRepoExpand(repo.id)}
-              className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-[#1a2035] transition-colors"
-            >
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                {expandedRepos.has(repo.id) ? (
-                  <ChevronDown className="w-4 h-4 text-[#a8ff3e] flex-shrink-0" />
-                ) : (
-                  <ChevronRight className="w-4 h-4 text-[#6b7788] flex-shrink-0" />
-                )}
-                <div className="flex flex-col items-start min-w-0">
-                  <span className="text-white font-semibold text-[11px] font-syne-Bold truncate">
-                    {repo.name}
-                  </span>
-                  <span className="text-[10px] text-[#6b7788]">
-                    {repo.conversationCount} conversation{repo.conversationCount !== 1 ? 's' : ''}
-                  </span>
-                </div>
-              </div>
-            </button>
-
-            {/* Conversations List (Expanded) */}
-            {expandedRepos.has(repo.id) && (
-              <div className="border-t border-[#1E2530] bg-[#0d0f14]">
-                {repo.conversations.map((conversation) => (
-                  <button
-                    key={conversation.id}
-                    onClick={() => selectConversation(conversation.id)}
-                    className={`w-full flex items-start gap-2 px-3 py-2 hover:bg-[#1a2035] transition-colors border-b border-[#1E2530] last:border-b-0 ${
-                      selectedConversation === conversation.id ? 'bg-[#1a2035] border-l-2 border-l-[#a8ff3e]' : ''
-                    }`}
-                  >
-                    <MessageSquare className="w-3 h-3 text-[#6b7788] flex-shrink-0 mt-0.5" />
-                    <div className="flex-1 min-w-0 text-left">
-                      <div className="text-white text-[10px] font-semibold truncate mb-0.5">
-                        {conversation.title}
-                      </div>
-                      <div className="text-[9px] text-[#6b7788] truncate mb-0.5">
-                        {conversation.lastMessage}
-                      </div>
-                      <div className="flex items-center gap-2 text-[9px] text-[#7a8299]">
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-2.5 h-2.5" />
-                          {conversation.timestamp}
-                        </div>
-                        <div>•</div>
-                        <div>{conversation.messageCount} msgs</div>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
+        {loading ? (
+          <div className="flex items-center justify-center py-8 text-[#6b7788] text-[11px]">
+            Loading repos...
           </div>
-        ))}
+        ) : repos.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <FolderOpen className="w-8 h-8 text-[#6b7788] mb-2" />
+            <p className="text-[11px] text-[#6b7788] mb-3">No repositories yet</p>
+            <button 
+              onClick={handleAddRepo}
+              className="px-3 py-1.5 bg-[#a8ff3e] text-black text-[11px] rounded-[5px] hover:bg-[#bfff6e] transition-colors"
+            >
+              Add your first repo
+            </button>
+          </div>
+        ) : (
+          repos.map((repo) => (
+            <div key={repo._id} className="border border-[#1E2530] rounded-[6px] bg-[#11141C] overflow-hidden">
+              {/* Repo Header */}
+              <button
+                onClick={() => toggleRepoExpand(repo.jobId)}
+                className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-[#1a2035] transition-colors"
+              >
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  {expandedRepos.has(repo.jobId) ? (
+                    <ChevronDown className="w-3 h-3 text-[#6b7788] flex-shrink-0" />
+                  ) : (
+                    <ChevronRight className="w-3 h-3 text-[#6b7788] flex-shrink-0" />
+                  )}
+                  <div className="flex flex-col items-start min-w-0">
+                    <span className="text-white font-semibold text-[11px] font-syne-Bold truncate">
+                      {extractRepoName(repo.repoLink)}
+                    </span>
+                    <span className="text-[10px] text-[#6b7788]">
+                      {repo.conversations.length} conversation{repo.conversations.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </div>
+                <MessageSquare className="w-3 h-3 text-[#6b7788] flex-shrink-0" />
+              </button>
+
+              {/* Conversations List */}
+              {expandedRepos.has(repo.jobId) && (
+                <div className="border-t border-[#1E2530] bg-[#0d0f14]">
+                  {/* New Conversation Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      createNewConversation(repo.jobId);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-[#1a2035] transition-colors text-[#a8ff3e] text-[11px]"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>New Conversation</span>
+                  </button>
+
+                  {/* Conversation Items */}
+                  {loadingConversations.has(repo.jobId) ? (
+                    <div className="flex items-center justify-center py-4 text-[#6b7788] text-[10px]">
+                      Loading conversations...
+                    </div>
+                  ) : repo.conversations.length === 0 ? (
+                    <div className="flex items-center justify-center py-4 text-[#6b7788] text-[10px]">
+                      No conversations yet
+                    </div>
+                  ) : (
+                    repo.conversations.map((conversation) => (
+                      <button
+                        key={conversation._id}
+                        onClick={() => selectConversation(repo.jobId, conversation._id)}
+                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-[#1a2035] transition-colors text-left"
+                      >
+                        <MessageSquare className="w-3 h-3 text-[#6b7788] flex-shrink-0" />
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-white text-[11px] truncate">
+                            {conversation.title}
+                          </span>
+                          <span className="text-[9px] text-[#6b7788]">
+                            {conversation.messages.length} messages
+                          </span>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
     </aside>
   );

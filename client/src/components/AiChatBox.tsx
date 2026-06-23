@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import LogoIcon from "./LogoIcon";
 import SendIcon from "./SendIcon";
 import IssuePanel from "./IssuePanel";
-import HistoryPanel from "./History";
 import RepoConversationSidebar from "./RepoConversationSidebar";
 import { socket } from "../socket";
 import API from "../../axiosSetup/API";
@@ -10,7 +9,7 @@ import { useParams } from "react-router-dom";
 import type { AxiosError } from "axios";
 
 function AiChatBox() {
-  const { jobId } = useParams();
+  const { jobId, conversationId: urlConversationId } = useParams();
   const repoId = jobId ?? localStorage.getItem("repoId");
   const conversationStorageKey = repoId ? `conversationId:${repoId}` : "conversationId";
   const [querry, updatequerry] = useState("");
@@ -18,26 +17,20 @@ function AiChatBox() {
   type Message = {
     sender: Sender;
     text: string;
+    createdAt?: Date;
   };
-  const [messages, setMessage] = useState<Message[]>([]);
-  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [messages, setMessage] = useState<Message[]>([]); // yaha message set ho rha hai array me
+  const [conversationId, setConversationId] = useState<string | null>(urlConversationId || null);
+
+  // Ensure repoId is always available from URL params when present
+  useEffect(() => {
+    if (jobId) {
+      localStorage.setItem("repoId", jobId);
+    }
+  }, [jobId]);
 
   // whenever AiChatBox render on UI this socket connect useeffect will run and try to connect a web-socket to the server
   // functions
-  const createConversation = useCallback(async () => {
-    const res = await API.post("/conversation");
-    const newConversationId = res.data._id;
-
-    setConversationId(newConversationId);
-
-    localStorage.setItem(
-      conversationStorageKey,
-      newConversationId
-    );
-
-    return newConversationId;
-  }, [conversationStorageKey]);
-
   const fetchMessage = useCallback(async () => {
     console.log("frontend convId:", conversationId);
     try {
@@ -52,19 +45,21 @@ function AiChatBox() {
       if (error.response?.status === 404) {
         localStorage.removeItem(conversationStorageKey);
         setMessage([]);
-        await createConversation();
+        const res = await API.post("/conversation", { repoId });
+        const newConversationId = res.data._id;
+        setConversationId(newConversationId);
+        localStorage.setItem(conversationStorageKey, newConversationId);
         return;
       }
 
       console.error(err);
     }
-  }, [conversationId, conversationStorageKey, createConversation]);
+  }, [conversationId, conversationStorageKey, repoId]);
 
   const sendQuerry = () => {
-    console.log("button clicked", messages); // working
-
     const message: Message = { sender: "user", text: querry };
     if (!message.text.trim()) return;
+    console.log("Sending query with conversationId:", conversationId, "repoId:", repoId);
     setMessage((prev) => [...prev, message]);
     socket.emit("querry_sent", { conversationId, repoId, querry: message.text });
     updatequerry("");
@@ -77,36 +72,81 @@ function AiChatBox() {
     }
   };
 
-  //useEffects 1
-  useEffect(() => {
-    if (jobId) {
-      localStorage.setItem("repoId", jobId);
-    }
-  }, [jobId]);
+
 
   //useEffects 1
   useEffect(() => {
     const initConversation = async () => {
-      const existingId =
-        localStorage.getItem(conversationStorageKey);
+      console.log("Initializing conversation with jobId:", jobId, "repoId:", repoId, "urlConversationId:", urlConversationId);
+      
+      // If conversationId is provided in URL, use it directly
+      if (urlConversationId) {
+        try {
+          console.log("Loading specific conversation from URL:", urlConversationId);
+          const response = await API.get(`/messages`, {
+            params: { conversationId: urlConversationId }
+          });
+          setConversationId(urlConversationId);
+          localStorage.setItem(conversationStorageKey, urlConversationId);
+          setMessage(response.data);
+          return;
+        } catch (err) {
+          console.error("Error loading conversation from URL:", err);
+          // If error, fall through to create new conversation
+        }
+      }
+      
+      // Try to fetch existing conversation by repoId when jobId is present
+      if (jobId) {
+        try {
+          console.log("Fetching existing conversation for repoId:", jobId);
+          const response = await API.get(`/conversation/repo/${jobId}`);
+          const existingConversation = response.data;
+          console.log("Found existing conversation:", existingConversation._id, "with messages:", existingConversation.messages?.length);
+          setConversationId(existingConversation._id);
+          localStorage.setItem(conversationStorageKey, existingConversation._id);
+          // Load existing messages
+          setMessage(existingConversation.messages || []);
+          return;
+        } catch (err) {
+          console.log("No existing conversation found, creating new one");
+          // If no conversation exists, create a new one
+          const res = await API.post("/conversation", { repoId: jobId });
+          const newConversationId = res.data._id;
+          console.log("Created new conversation:", newConversationId);
+          setConversationId(newConversationId);
+          localStorage.setItem(conversationStorageKey, newConversationId);
+          return;
+        }
+      }
 
+      // For non-jobId cases, try to reuse existing conversation
+      const existingId = localStorage.getItem(conversationStorageKey);
       if (existingId) {
+        console.log("Reusing existing conversation from localStorage:", existingId);
         setConversationId(existingId);
         return;
       }
 
-      await createConversation();
+      console.log("Creating new conversation for non-jobId case");
+      const res = await API.post("/conversation", { repoId });
+      const newConversationId = res.data._id;
+      setConversationId(newConversationId);
+      localStorage.setItem(conversationStorageKey, newConversationId);
     };
 
     initConversation();
-  }, [conversationStorageKey, createConversation]);
+  }, [conversationStorageKey, jobId, repoId, urlConversationId]);
 
   //useEffects 2
   useEffect(() => {
     if (!conversationId) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchMessage();
-  }, [conversationId, fetchMessage]);
+    // Only fetch messages if we don't have jobId or urlConversationId (since we load them from conversation for jobId case)
+    if (!jobId && !urlConversationId) {
+      fetchMessage();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId, jobId, urlConversationId]);
 
   //useEffects 3
   useEffect(() => {

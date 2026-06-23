@@ -22,5 +22,6 @@ const RepoSchema = new mongoose.Schema(
     }
 
 )
+
 const Repo = mongoose.model("Repo", RepoSchema);
 export default Repo;

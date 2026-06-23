@@ -11,11 +11,17 @@ function LinkDrop() {
     const res = await API.post("/num", { "link": url_link})
     console.log(res.data);
     const jobId = res.data.jobId;
+    const existing = res.data.existing;
     console.log("this is jobId hai:", jobId);
+    console.log("is existing repo:", existing);
 
-    
+    if (existing) {
+      // If repo already exists, go directly to chatbot
+      navigate(`/chat/${jobId}`);
+    } else {
+      // If new repo, go to loading page
       navigate(`/loading/${jobId}`);
-  
+    }
   }
 
   return (

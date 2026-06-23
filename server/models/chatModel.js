@@ -9,9 +9,8 @@ const conversationSchema = new mongoose.Schema(
       index: true,
     },
     repoId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Repo",
-      required: true,
+      type: String,
+      required: false,
       index: true
     },
 

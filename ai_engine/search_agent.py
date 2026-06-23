@@ -15,7 +15,14 @@ db = client_db["code_agent"]
 collection = db["embeddings"]
 
 def search_and_answer(query, repo_id):
-   
+    print("=== Python Search Agent ===")
+    print("Repo ID:", repo_id)
+    print("Repo ID type:", type(repo_id))
+    print("Repo ID length:", len(repo_id) if repo_id else 'None')
+    print("Query:", query)
+
+    count = collection.count_documents({"repo_id": repo_id})
+    print("Documents for repo:", count) 
     query_vector =  client_ai.models.embed_content(
         model="models/gemini-embedding-2-preview",
         contents=query,
@@ -30,12 +37,10 @@ def search_and_answer(query, repo_id):
                 "path": "embedding",
                 "queryVector": query_vector,
                 "numCandidates": 1000,
-                "limit": 1000, 
-            }
-        },
-        {
-            "$match": {
-                "repo_id": repo_id
+                "limit": 1000,
+                "filter": {
+                    "repo_id": repo_id
+                }
             }
         },
         {
@@ -58,8 +63,13 @@ def search_and_answer(query, repo_id):
     print("Stored Dim:", len(doc["embedding"]))
     
     results = list(collection.aggregate(pipeline))
-    print(len(results))
+    print("Results count:", len(results))
+
     if not results:
+        print("DEBUG: No results found!")
+        # Show some sample repo_ids in the database for debugging
+        sample_repos = collection.distinct("repo_id")[:5]
+        print("Sample repo_ids in database:", sample_repos)
         return "No relevant code found in the repository."
 
     

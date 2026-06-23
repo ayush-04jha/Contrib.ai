@@ -9,7 +9,8 @@ import messagesRouter from "./routes/messagesRouter.js";
 import createConversationRouter from "./routes/createConversationRouter.js";
 import { initSocket } from "./socket.js";
 import repoIssuesRouter from "./routes/repoIssuesRouter.js"
-import signupRouter from "./routes/signupRouter.js"
+import signupRouter from "./routes/signupRouter.js";
+import authRouter from "./routes/authRouter.js";
 dotenv.config();
 
 const app = express();
@@ -22,7 +23,8 @@ app.use("/api", urlProcessingRouter);
 app.use("/api", messagesRouter);
 app.use("/api", createConversationRouter);
 app.use("/api", repoIssuesRouter);
-app.use("/api",signupRouter)
+app.use("/api", signupRouter);
+app.use("/api", authRouter);
 initSocket(server);
 
 const startServer = async () => {

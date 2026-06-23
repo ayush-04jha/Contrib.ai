@@ -1,4 +1,6 @@
- export const authMiddleware = (req,res,next) => {
+import jwt from "jsonwebtoken";
+
+export const authMiddleware = (req,res,next) => {
 
     const authHeader =
       req.headers.authorization;

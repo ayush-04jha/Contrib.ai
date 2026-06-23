@@ -1,12 +1,17 @@
-import { Hexagon } from "lucide-react";
+import { Hexagon, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import API from "../../axiosSetup/API";
+
 interface User {
   id: string;
   name: string;
   email: string;
 }
+
 function Navbar() {
     const [user, setUser] = useState<User | null>(null);
+    const navigate = useNavigate();
 
 useEffect(() => {
   const storedUser = JSON.parse(
@@ -15,6 +20,23 @@ useEffect(() => {
 
   setUser(storedUser);
 }, []);
+
+const handleLogout = async () => {
+    try {
+        await API.post("/auth/logout");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        setUser(null);
+        navigate("/");
+    } catch (error) {
+        console.error("Logout error:", error);
+        // Even if the API call fails, clear local storage
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        setUser(null);
+        navigate("/");
+    }
+};
 
     return (
         <div className="bg-[#0d0f14] border-b-2 border-[#1e2530] flex items-center py-5 px-11  justify-between">
@@ -41,18 +63,29 @@ useEffect(() => {
             <div className="flex space-x-1">
                 {
                     user ? (
-                        <div className="text-white border border-red-400 w-15">
-                            {user.name}
+                        <div className="flex items-center space-x-3">
+                            <div className="text-white border border-[#1e2530] rounded-[5px] p-2">
+                                {user.name}
+                            </div>
+                            <button 
+                                onClick={handleLogout}
+                                className="flex items-center space-x-1 text-[#7a8299] hover:text-white border border-[#1e2530] rounded-[5px] p-2 transition-colors"
+                            >
+                                <LogOut className="w-4 h-4" />
+                                <span>Logout</span>
+                            </button>
                         </div>
                     ) : (
-                        <button className="bg-[#a8ff3e] rounded-[5px] p-2">
-                            Sign Up
-                        </button>
+                        <>
+                            <a href="/login" className="text-[#7a8299] hover:text-white border border-[#1e2530] rounded-[5px] p-2 transition-colors">
+                                Login
+                            </a>
+                            <a href="/signup" className="bg-[#a8ff3e] text-black rounded-[5px] p-2 hover:bg-[#bfff6e] transition-colors">
+                                Sign Up
+                            </a>
+                        </>
                     )
                 }
-                <button className="bg-[#a8ff3e] rounded-[5px] p-2">
-                    Get early access
-                </button>
             </div>
 
         </div>
