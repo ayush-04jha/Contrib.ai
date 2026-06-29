@@ -31,16 +31,18 @@ collection = db["embeddings"]
 
 # for m in models:
 #     print(m)
-# Initialize Tree-sitter
+# Initialize Tree-sitter parsers once (reuse them)
 PY_LANGUAGE = Language(tspython.language())
 JS_LANGUAGE = Language(tsjs.language())
+py_parser = Parser(PY_LANGUAGE)
+js_parser = Parser(JS_LANGUAGE)
 
 
 def get_parser(file_path):
     if file_path.endswith(".py"):
-        return Parser(PY_LANGUAGE), "function_definition"
+        return py_parser, "function_definition"
     if file_path.endswith((".js", ".jsx", ".ts", ".tsx")):
-        return Parser(JS_LANGUAGE), "function_declaration"
+        return js_parser, "function_declaration"
     return None, None
 
 
@@ -55,6 +57,7 @@ def process_file(file_path, repo_id):
     tree = parser.parse(code_content)
     root = tree.root_node
 
+    embeddings_to_insert = []
     count = 0
 
     def walk(node):
@@ -120,7 +123,8 @@ def process_file(file_path, repo_id):
                 )
                 vector = embedding_result.embeddings[0].values
 
-                collection.insert_one(
+                # Collect embedding for batch insert
+                embeddings_to_insert.append(
                     {
                         "repo_id": repo_id,
                         "file_path": file_path,
@@ -136,6 +140,11 @@ def process_file(file_path, repo_id):
             walk(child)
 
     walk(root)
+    
+    # Batch insert all embeddings from this file
+    if embeddings_to_insert:
+        collection.insert_many(embeddings_to_insert)
+    
     return count
 
 # the code inside  __name__ == "__main__" runs only when you run the file directly in terminal. and if you try to import this file in any other folder and then run this file then with the desired requirement you will also run the code outside of __name__=="main" but not the code not the inside one 

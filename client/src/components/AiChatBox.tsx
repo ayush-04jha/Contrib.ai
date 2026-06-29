@@ -5,7 +5,7 @@ import IssuePanel from "./IssuePanel";
 import RepoConversationSidebar from "./RepoConversationSidebar";
 import { socket } from "../socket";
 import API from "../../axiosSetup/API";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import type { AxiosError } from "axios";
 
 function AiChatBox() {
@@ -21,7 +21,7 @@ function AiChatBox() {
   };
   const [messages, setMessage] = useState<Message[]>([]); // yaha message set ho rha hai array me
   const [conversationId, setConversationId] = useState<string | null>(urlConversationId || null);
-
+  const navigate  = useNavigate();
   // Ensure repoId is always available from URL params when present
   useEffect(() => {
     if (jobId) {
@@ -72,13 +72,15 @@ function AiChatBox() {
     }
   };
 
-
+  const navigateToLandingPage = ()=>{
+          navigate("/")
+  }
 
   //useEffects 1
   useEffect(() => {
     const initConversation = async () => {
       console.log("Initializing conversation with jobId:", jobId, "repoId:", repoId, "urlConversationId:", urlConversationId);
-      
+
       // If conversationId is provided in URL, use it directly
       if (urlConversationId) {
         try {
@@ -95,7 +97,7 @@ function AiChatBox() {
           // If error, fall through to create new conversation
         }
       }
-      
+
       // Try to fetch existing conversation by repoId when jobId is present
       if (jobId) {
         try {
@@ -189,12 +191,18 @@ function AiChatBox() {
         <RepoConversationSidebar />
         <section className="flex min-h-screen flex-col border-r border-[#1E2530]">
           {/* contrib.ai assistant */}
-          <div className="flex gap-3.5 border border-[#1E2530] pl-4">
-            <LogoIcon />
-            <div className="text-white">
-              <div className="font-syne-Bold text-[13px]">contrib.ai assistant</div>
-              <div className="text-[12px] text-[#6b7788]">context-aware - facebook/react</div>
+          <div className="border border-[#1E2530] flex  items-center justify-between">
+            <div className="flex gap-3.5  pl-4">
+              <LogoIcon />
+              <div className="text-white">
+                <div className="font-syne-Bold text-[13px]">contrib.ai assistant</div>
+                <div className="text-[12px] text-[#6b7788]">context-aware - facebook/react</div>
+              </div>
             </div>
+
+             <button onClick={navigateToLandingPage} className="rounded bg-lime-400 text-black h-6 font-medium cursor-pointer hover:bg-lime-300 transition mr-2 px-2 text-[15px]">
+            Home 
+          </button>
           </div>
 
           {/* where do i start */}
@@ -235,7 +243,7 @@ function AiChatBox() {
           </div>
         </section>
 
-        <IssuePanel jobid={jobId} /> 
+        <IssuePanel jobid={jobId} />
       </div>
     </div>
   );
