@@ -19,7 +19,19 @@ export default function SignupPage() {
     password.length > 0 &&
     confirmPassword.length > 0 &&
     password === confirmPassword;
-
+  const handleGoogleLogin = () => {
+    const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
+    const options = {
+      redirect_uri: 'http://localhost:5173/auth/google/callback', // Exact same redirect URI
+      client_id: '789586597055-6kjsuuhnhth6kcpknbmtc3pjtnnqo0bp.apps.googleusercontent.com',
+      access_type: 'offline',
+      response_type: 'code',
+      prompt: 'consent',
+      scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+    };
+    const queryString = new URLSearchParams(options).toString();
+    window.location.href = `${rootUrl}?${queryString}`;
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -38,50 +50,33 @@ export default function SignupPage() {
         email,
         password,
       });
-   if (
-  res.data?.success &&
-  res.data?.token
-) {
-  localStorage.setItem(
-    "token",
-    res.data.token
-  );
+      if (res.data?.success) {
+        // Check if user has existing repos (should be 0 for new users)
+        try {
+          const reposRes = await API.get("/user/repos");
 
-  localStorage.setItem(
-    "user",
-    JSON.stringify(res.data.user)
-  );
-
-  // Check if user has existing repos (should be 0 for new users)
-  try {
-    const reposRes = await API.get("/user/repos", {
-      headers: {
-        Authorization: `Bearer ${res.data.token}`,
-      },
-    });
-
-    if (reposRes.data?.count > 0) {
-      // User has repos, navigate to chatbox with the first repo
-      const firstRepo = reposRes.data.repos[0];
-      navigate(`/chatbox/${firstRepo.jobId}`);
-    } else {
-      // No repos, navigate to link drop
-      navigate("/pastelink");
-    }
-  } catch (reposErr) {
-    // If checking repos fails, default to link drop
-    navigate("/pastelink");
-  }
-} else {
-  setError(
-    res.data?.message ||
-    "Signup failed"
-  );
-}
+          if (reposRes.data?.count > 0) {
+            // User has repos, navigate to chatbox with the first repo
+            const firstRepo = reposRes.data.repos[0];
+            navigate(`/chatbox/${firstRepo.jobId}`);
+          } else {
+            // No repos, navigate to link drop
+            navigate("/pastelink");
+          }
+        } catch (reposErr) {
+          // If checking repos fails, default to link drop
+          navigate("/pastelink");
+        }
+      } else {
+        setError(
+          res.data?.message ||
+          "Signup failed"
+        );
+      }
     } catch (err: any) {
       setError(
         err?.response?.data?.message ||
-          "Something went wrong"
+        "Something went wrong"
       );
     } finally {
       setLoading(false);
@@ -220,11 +215,10 @@ export default function SignupPage() {
           {/* Password Match Indicator */}
           {confirmPassword.length > 0 && (
             <p
-              className={`text-sm mt-2 ${
-                passwordsMatch
+              className={`text-sm mt-2 ${passwordsMatch
                   ? "text-green-400"
                   : "text-red-400"
-              }`}
+                }`}
             >
               {passwordsMatch
                 ? "✓ Passwords match"
@@ -250,7 +244,24 @@ export default function SignupPage() {
               : "Create Account"}
           </button>
         </form>
+        {/* --- OR Divider --- */}
+        <div className="flex items-center my-6">
+          <div className="flex-1 border-t border-[#2a2a2a]"></div>
+          <span className="px-3 text-[#8a8f98] text-xs uppercase">Or</span>
+          <div className="flex-1 border-t border-[#2a2a2a]"></div>
+        </div>
 
+        {/* Google Signup Button */}
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          className="w-full py-3 rounded-lg border border-[#2a2a2a] bg-[#161616] text-white font-medium hover:bg-[#1e1e1e] transition-all duration-300 flex items-center justify-center gap-2"
+        >
+          <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.107C18.416 1.421 15.52 0 12.24 0 5.58 0 0 5.37 0 12s5.58 12 12.24 12c6.96 0 11.57-4.854 11.57-11.77 0-.795-.085-1.4-.195-1.945H12.24z" />
+          </svg>
+          Sign up with Google
+        </button>
         <p className="text-center text-[#8a8f98] text-sm mt-6">
           Already have an account?{" "}
           <a

@@ -193,7 +193,7 @@ function AiChatBox() {
           {/* contrib.ai assistant */}
           <div className="border border-[#1E2530] flex  items-center justify-between">
             <div className="flex gap-3.5  pl-4">
-              <LogoIcon />
+              <LogoIcon />  
               <div className="text-white">
                 <div className="font-syne-Bold text-[13px]">contrib.ai assistant</div>
                 <div className="text-[12px] text-[#6b7788]">context-aware - facebook/react</div>

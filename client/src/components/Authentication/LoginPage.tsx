@@ -9,6 +9,20 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  
+  const handleGoogleLogin = () => {
+    const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
+    const options = {
+      redirect_uri: 'http://localhost:5173/auth/google/callback', // Vite default port ke hisab se exact string
+      client_id: '789586597055-6kjsuuhnhth6kcpknbmtc3pjtnnqo0bp.apps.googleusercontent.com', // Replace with original ID
+      access_type: 'offline',
+      response_type: 'code',
+      prompt: 'consent',
+      scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+    };
+    const queryString = new URLSearchParams(options).toString();
+    window.location.href = `${rootUrl}?${queryString}`;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,16 +41,12 @@ export default function LoginPage() {
         password,
       });
 
-      if (res.data?.success && res.data?.token) {
-        localStorage.setItem("token", res.data.token);
+      if (res.data?.success) {
+        
         localStorage.setItem("user", JSON.stringify(res.data.user));
 
         // Check if user has existing repos
-        const reposRes = await API.get("/user/repos", {
-          headers: {
-            Authorization: `Bearer ${res.data.token}`,
-          },
-        });
+        const reposRes = await API.get("/user/repos");
 
         if (reposRes.data?.count > 0) {
           // User has repos, navigate to chatbox with the first repo
@@ -64,24 +74,19 @@ export default function LoginPage() {
           <div className="w-8 h-8 bg-[#a8ff3e] rounded-md flex items-center justify-center">
             <div className="w-4 h-4 border-2 border-black rounded-sm" />
           </div>
-
           <span className="text-white text-lg font-bold">
             contrib<span className="text-[#a8ff3e]">.ai</span>
           </span>
         </div>
 
         <h1 className="text-white text-3xl font-bold mb-2">Welcome Back</h1>
-
         <p className="text-[#8a8f98] text-sm mb-8">
           Login to access your repositories and conversations.
         </p>
 
         <form onSubmit={handleSubmit}>
           {/* Email */}
-          <label className="block text-[#c5c9d0] text-sm mb-2">
-            Email
-          </label>
-
+          <label className="block text-[#c5c9d0] text-sm mb-2">Email</label>
           <input
             type="email"
             value={email}
@@ -92,10 +97,7 @@ export default function LoginPage() {
           />
 
           {/* Password */}
-          <label className="block text-[#c5c9d0] text-sm mb-2">
-            Password
-          </label>
-
+          <label className="block text-[#c5c9d0] text-sm mb-2">Password</label>
           <div className="relative mb-4">
             <input
               type={showPassword ? "text" : "password"}
@@ -105,7 +107,6 @@ export default function LoginPage() {
               placeholder="Enter your password"
               className="w-full px-3 py-3 pr-16 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-white outline-none focus:border-[#a8ff3e]"
             />
-
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
@@ -115,12 +116,9 @@ export default function LoginPage() {
             </button>
           </div>
 
-          {/* Error */}
-          {error && (
-            <div className="mt-4 text-red-400 text-sm">{error}</div>
-          )}
+          {error && <div className="mt-4 text-red-400 text-sm">{error}</div>}
 
-          {/* Submit */}
+          {/* Normal Login Button */}
           <button
             type="submit"
             disabled={loading}
@@ -130,11 +128,29 @@ export default function LoginPage() {
           </button>
         </form>
 
+        {/* --- OR Divider --- */}
+        <div className="flex items-center my-6">
+          <div className="flex-1 border-t border-[#2a2a2a]"></div>
+          <span className="px-3 text-[#8a8f98] text-xs uppercase">Or</span>
+          <div className="flex-1 border-t border-[#2a2a2a]"></div>
+        </div>
+
+        {/* Google OAuth Button Integration */}
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          className="w-full py-3 rounded-lg border border-[#2a2a2a] bg-[#161616] text-white font-medium hover:bg-[#1e1e1e] transition-all duration-300 flex items-center justify-center gap-2"
+        >
+          {/* Google Icon SVG */}
+          <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.107C18.416 1.421 15.52 0 12.24 0 5.58 0 0 5.37 0 12s5.58 12 12.24 12c6.96 0 11.57-4.854 11.57-11.77 0-.795-.085-1.4-.195-1.945H12.24z"/>
+          </svg>
+          Continue with Google
+        </button>
+
         <p className="text-center text-[#8a8f98] text-sm mt-6">
           Don't have an account?{" "}
-          <a href="/signup" className="text-[#a8ff3e] hover:underline">
-            Sign up
-          </a>
+          <a href="/signup" className="text-[#a8ff3e] hover:underline">Sign up</a>
         </p>
       </div>
     </div>

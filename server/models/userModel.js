@@ -18,9 +18,24 @@ const userSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true,
+      required: function () {
+        // Agar authProvider 'local' hai (normal signup), toh password zaroori hai
+        return this.authProvider === "local";
+      },
     },  
-
+     authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
+    googleId: {
+      type: String,
+      default: null,
+    },
+    avatar: {
+      type: String,
+      default: "",
+    },
     
   },
   {

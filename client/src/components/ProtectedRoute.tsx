@@ -11,16 +11,16 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
   const location = useLocation();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    
     const user = localStorage.getItem("user");
 
-    if (token && user) {
+    if (user) {
       setIsAuthenticated(true);
     } else {
       setIsAuthenticated(false);
     }
     setIsLoading(false);
-  }, []);
+  }, [location.pathname]);
 
   if (isLoading) {
     return (
