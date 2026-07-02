@@ -3,13 +3,15 @@ import Conversation from "../models/chatModel.js";
 export const createConversation = async (req,res)=>{
     try {
     const { repoId } = req.body;
-    console.log("Creating conversation with repoId:", repoId);
+    const userId = req.user.userId; // Get userId from authenticated user
+    
     const conversation = await Conversation.create({
       title: "New Chat",
       messages: [],
       repoId,
+      userId, // Add userId to associate conversation with user
     });
-    console.log("conversation created with _id:", conversation._id, "repoId:", conversation.repoId);
+    console.log("conversation created with _id:", conversation._id, "repoId:", conversation.repoId, "userId:", userId);
     
     res.status(201).json(conversation);
   } catch (err) {

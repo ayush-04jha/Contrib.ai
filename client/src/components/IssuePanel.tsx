@@ -91,9 +91,9 @@ function IssuePanel({ jobid }: { jobid: string | undefined }) {
               key={label}
               type="button"
               onClick={() => setActiveLabel(label)}
-              className={`rounded-[5px] border px-2 py-1 text-[11px] transition ${activeLabel === label
+              className={`rounded-[5px] border px-2 py-1 text-[11px] transition-all duration-300 ${activeLabel === label
                 ? "border-[#4c5f92] bg-[#1a2035] text-white"
-                : "border-[#1E2530] bg-[#11141C] text-[#828FAC] hover:border-[#2a3048] hover:text-white"
+                : "border-[#1E2530] bg-[#11141C] text-[#828FAC] hover:border-[#a8ff3e] hover:text-white hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105"
                 }`}
             >
               {label}
@@ -104,25 +104,25 @@ function IssuePanel({ jobid }: { jobid: string | undefined }) {
 
       <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
         {filteredIssues.map((issue) => (
-          <article key={issue.id} className="rounded-[8px] border border-[#1E2530] bg-[#11141C] p-3">
+          <article key={issue.id} className="rounded-[8px] border border-[#1E2530] bg-[#11141C] p-3 transition-all duration-300 hover:border-[#a8ff3e] hover:shadow-[0_0_10px_rgba(168,255,62,0.2)] hover:-translate-y-0.5 cursor-pointer">
             <div className="mb-2 flex items-center justify-between gap-3">
-              <span className="font-syne-jetBrains text-[11px] text-[#6b7788]">#{issue.number}</span>
-              <span className={`rounded-[5px] border px-2 py-0.5 text-[10px] ${issue.status === "open"
+              <span className="font-syne-jetBrains text-[11px] text-[#6b7788] transition-all duration-300 hover:text-[#a8ff3e]">#{issue.number}</span>
+              <span className={`rounded-[5px] border px-2 py-0.5 text-[10px] transition-all duration-300 ${issue.status === "open"
                 ? "border-[#244f38] bg-[#102018] text-[#7ed9a4]"
                 : "border-[#4c3f25] bg-[#211a10] text-[#d7b46a]"
                 }`}>
                 {issue.status}
               </span>
             </div>
-            <h2 className="text-[13px] leading-5 text-white">{issue.title}</h2>
+            <h2 className="text-[13px] leading-5 text-white transition-all duration-300 hover:text-[#a8ff3e]">{issue.title}</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {issue.labels.map((label) => (
-                <span key={label} className="rounded-[5px] border border-[#2a3048] bg-[#1a2035] px-2 py-0.5 text-[10px] text-[#AAB5CC]">
+                <span key={label} className="rounded-[5px] border border-[#2a3048] bg-[#1a2035] px-2 py-0.5 text-[10px] text-[#AAB5CC] transition-all duration-300 hover:border-[#a8ff3e] hover:text-[#a8ff3e]">
                   {label}
                 </span>
               ))}
             </div>
-            <div className="mt-3 text-[11px] text-[#6b7788]">Updated {issue.updatedAt}</div>
+            <div className="mt-3 text-[11px] text-[#6b7788] transition-all duration-300 hover:text-[#a8ff3e]">Updated {issue.updatedAt}</div>
           </article>
         ))}
       </div>

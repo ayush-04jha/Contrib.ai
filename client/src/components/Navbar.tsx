@@ -1,4 +1,4 @@
-import { Hexagon, LogOut } from "lucide-react";
+import { Hexagon, LogOut, MessageSquare } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../axiosSetup/API";
@@ -11,6 +11,7 @@ interface User {
 
 function Navbar() {
     const [user, setUser] = useState<User | null>(null);
+    const [repoId, setRepoId] = useState<string | null>(null);
     const navigate = useNavigate();
 
 useEffect(() => {
@@ -19,6 +20,9 @@ useEffect(() => {
   );
 
   setUser(storedUser);
+  // Get the last accessed repoId from localStorage
+  const storedRepoId = localStorage.getItem("repoId");
+  setRepoId(storedRepoId);
 }, []);
 
 const handleLogout = async () => {
@@ -26,15 +30,39 @@ const handleLogout = async () => {
         await API.post("/auth/logout");
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        localStorage.removeItem("repoId");
         setUser(null);
+        setRepoId(null);
         navigate("/");
     } catch (error) {
         console.error("Logout error:", error);
         // Even if the API call fails, clear local storage
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        localStorage.removeItem("repoId");
         setUser(null);
+        setRepoId(null);
         navigate("/");
+    }
+};
+
+const handleGoToChatbox = async () => {
+    try {
+        // Try to get user's repos
+        const reposRes = await API.get("/user/repos");
+        
+        if (reposRes.data?.count > 0) {
+            // User has repos, navigate to the first one
+            const firstRepo = reposRes.data.repos[0];
+            navigate(`/chatbox/${firstRepo.jobId}`);
+        } else {
+            // No repos, navigate to link drop
+            navigate("/pastelink");
+        }
+    } catch (error) {
+        console.error("Error fetching repos:", error);
+        // Fallback to link drop
+        navigate("/pastelink");
     }
 };
 
@@ -64,12 +92,21 @@ const handleLogout = async () => {
                 {
                     user ? (
                         <div className="flex items-center space-x-3">
+                            {/* Go to Chatbox button for logged-in users */}
+                            <button
+                                onClick={handleGoToChatbox}
+                                className="flex items-center space-x-1 text-[#a8ff3e] hover:text-[#bfff6e] border border-[#1e2530] rounded-[5px] p-2 transition-all duration-300 hover:border-[#a8ff3e] hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105"
+                            >
+                                <MessageSquare className="w-4 h-4" />
+                                <span>Chat</span>
+                            </button>
+                            
                             <div className="text-white border border-[#1e2530] rounded-[5px] p-2">
                                 {user.name}
                             </div>
-                            <button 
+                            <button
                                 onClick={handleLogout}
-                                className="flex items-center space-x-1 text-[#7a8299] hover:text-white border border-[#1e2530] rounded-[5px] p-2 transition-colors"
+                                className="flex items-center space-x-1 text-[#7a8299] hover:text-white border border-[#1e2530] rounded-[5px] p-2 transition-all duration-300 hover:border-[#a8ff3e] hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105"
                             >
                                 <LogOut className="w-4 h-4" />
                                 <span>Logout</span>
@@ -77,10 +114,10 @@ const handleLogout = async () => {
                         </div>
                     ) : (
                         <>
-                            <a href="/login" className="text-[#7a8299] hover:text-white border border-[#1e2530] rounded-[5px] p-2 transition-colors">
+                            <a href="/login" className="text-[#7a8299] hover:text-white border border-[#1e2530] rounded-[5px] p-2 transition-all duration-300 hover:border-[#a8ff3e] hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105">
                                 Login
                             </a>
-                            <a href="/signup" className="bg-[#a8ff3e] text-black rounded-[5px] p-2 hover:bg-[#bfff6e] transition-colors">
+                            <a href="/signup" className="bg-[#a8ff3e] text-black rounded-[5px] p-2 hover:bg-[#bfff6e] transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105">
                                 Sign Up
                             </a>
                         </>

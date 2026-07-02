@@ -9,12 +9,12 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  
+  const google_client_id = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const handleGoogleLogin = () => {
     const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
     const options = {
       redirect_uri: 'http://localhost:5173/auth/google/callback', // Vite default port ke hisab se exact string
-      client_id: '789586597055-6kjsuuhnhth6kcpknbmtc3pjtnnqo0bp.apps.googleusercontent.com', // Replace with original ID
+      client_id: `${google_client_id}`, // Replace with original ID
       access_type: 'offline',
       response_type: 'code',
       prompt: 'consent',
@@ -122,7 +122,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-6 py-3 rounded-lg bg-[#a8ff3e] text-black font-semibold hover:bg-[#bfff6e] transition-all duration-300 disabled:opacity-50"
+            className="w-full mt-6 py-3 rounded-lg bg-[#a8ff3e] text-black font-semibold hover:bg-[#bfff6e] transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
@@ -139,7 +139,7 @@ export default function LoginPage() {
         <button
           type="button"
           onClick={handleGoogleLogin}
-          className="w-full py-3 rounded-lg border border-[#2a2a2a] bg-[#161616] text-white font-medium hover:bg-[#1e1e1e] transition-all duration-300 flex items-center justify-center gap-2"
+          className="w-full py-3 rounded-lg border border-[#2a2a2a] bg-[#161616] text-white font-medium hover:bg-[#1e1e1e] hover:border-[#a8ff3e] transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.2)] hover:scale-105 flex items-center justify-center gap-2"
         >
           {/* Google Icon SVG */}
           <svg className="w-5 h-5" viewBox="0 0 24 24">

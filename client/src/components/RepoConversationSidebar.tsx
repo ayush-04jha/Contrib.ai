@@ -132,9 +132,9 @@ function RepoConversationSidebar() {
             <FolderOpen className="w-4 h-4 text-[#a8ff3e]" />
             <div className="font-syne-Bold text-[13px] text-white">Repositories</div>
           </div>
-          <button 
+          <button
             onClick={handleAddRepo}
-            className="flex items-center gap-1 text-[#a8ff3e] hover:text-[#bfff6e] text-[11px] font-medium transition-colors"
+            className="flex items-center gap-1 text-[#a8ff3e] hover:text-[#bfff6e] text-[11px] font-medium transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105"
           >
             <Plus className="w-4 h-4" />
             <span>Add</span>
@@ -169,29 +169,29 @@ function RepoConversationSidebar() {
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <FolderOpen className="w-8 h-8 text-[#6b7788] mb-2" />
             <p className="text-[11px] text-[#6b7788] mb-3">No repositories yet</p>
-            <button 
+            <button
               onClick={handleAddRepo}
-              className="px-3 py-1.5 bg-[#a8ff3e] text-black text-[11px] rounded-[5px] hover:bg-[#bfff6e] transition-colors"
+              className="px-3 py-1.5 bg-[#a8ff3e] text-black text-[11px] rounded-[5px] hover:bg-[#bfff6e] transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105"
             >
               Add your first repo
             </button>
           </div>
         ) : (
           repos.map((repo) => (
-            <div key={repo._id} className="border border-[#1E2530] rounded-[6px] bg-[#11141C] overflow-hidden">
+            <div key={repo._id} className="border border-[#1E2530] rounded-[6px] bg-[#11141C] overflow-hidden transition-all duration-300 hover:border-[#a8ff3e] hover:shadow-[0_0_10px_rgba(168,255,62,0.2)]">
               {/* Repo Header */}
               <button
                 onClick={() => toggleRepoExpand(repo.jobId)}
-                className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-[#1a2035] transition-colors"
+                className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-[#1a2035] transition-all duration-300"
               >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   {expandedRepos.has(repo.jobId) ? (
-                    <ChevronDown className="w-3 h-3 text-[#6b7788] flex-shrink-0" />
+                    <ChevronDown className="w-3 h-3 text-[#6b7788] flex-shrink-0 transition-all duration-300 hover:text-[#a8ff3e]" />
                   ) : (
-                    <ChevronRight className="w-3 h-3 text-[#6b7788] flex-shrink-0" />
+                    <ChevronRight className="w-3 h-3 text-[#6b7788] flex-shrink-0 transition-all duration-300 hover:text-[#a8ff3e]" />
                   )}
                   <div className="flex flex-col items-start min-w-0">
-                    <span className="text-white font-semibold text-[11px] font-syne-Bold truncate">
+                    <span className="text-white font-semibold text-[11px] font-syne-Bold truncate transition-all duration-300 hover:text-[#a8ff3e]">
                       {extractRepoName(repo.repoLink)}
                     </span>
                     <span className="text-[10px] text-[#6b7788]">
@@ -199,7 +199,7 @@ function RepoConversationSidebar() {
                     </span>
                   </div>
                 </div>
-                <MessageSquare className="w-3 h-3 text-[#6b7788] flex-shrink-0" />
+                <MessageSquare className="w-3 h-3 text-[#6b7788] flex-shrink-0 transition-all duration-300 hover:text-[#a8ff3e]" />
               </button>
 
               {/* Conversations List */}
@@ -211,7 +211,7 @@ function RepoConversationSidebar() {
                       e.stopPropagation();
                       createNewConversation(repo.jobId);
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-[#1a2035] transition-colors text-[#a8ff3e] text-[11px]"
+                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-[#1a2035] transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105 text-[#a8ff3e] text-[11px]"
                   >
                     <Plus className="w-3 h-3" />
                     <span>New Conversation</span>
@@ -231,11 +231,11 @@ function RepoConversationSidebar() {
                       <button
                         key={conversation._id}
                         onClick={() => selectConversation(repo.jobId, conversation._id)}
-                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-[#1a2035] transition-colors text-left"
+                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-[#1a2035] transition-all duration-300 hover:translate-x-1 text-left"
                       >
-                        <MessageSquare className="w-3 h-3 text-[#6b7788] flex-shrink-0" />
+                        <MessageSquare className="w-3 h-3 text-[#6b7788] flex-shrink-0 transition-all duration-300 hover:text-[#a8ff3e]" />
                         <div className="flex flex-col min-w-0">
-                          <span className="text-white text-[11px] truncate">
+                          <span className="text-white text-[11px] truncate transition-all duration-300 hover:text-[#a8ff3e]">
                             {conversation.title}
                           </span>
                           <span className="text-[9px] text-[#6b7788]">

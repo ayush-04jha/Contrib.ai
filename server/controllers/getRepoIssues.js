@@ -3,7 +3,7 @@ import Repo from "../models/RepoModel.js";
 
 const getRepoIssues = async (req, res) => {
   try {
-     console.log("part 1");
+     
      
     const { jobId } = req.params;
 
@@ -27,7 +27,7 @@ const getRepoIssues = async (req, res) => {
         message: "Invalid GitHub URL",
       });
     }
-   console.log("is this part");
+  
    
     const owner = match[1];
     const repoName = match[2];
@@ -35,7 +35,7 @@ const getRepoIssues = async (req, res) => {
     const response = await axios.get(
       `https://api.github.com/repos/${owner}/${repoName}/issues`
     );
-    console.log("backend response:",response);
+   
     
     const issues = response.data.filter(
   issue => !issue.pull_request

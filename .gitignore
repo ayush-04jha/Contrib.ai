@@ -54,3 +54,6 @@ temp/
 tmp/
 */temp/
 */tmp/
+
+# --- Documentation ---
+BUG_REPORT.md

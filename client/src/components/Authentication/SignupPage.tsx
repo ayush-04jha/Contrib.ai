@@ -14,7 +14,7 @@ export default function SignupPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
+  const google_client_id = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const passwordsMatch =
     password.length > 0 &&
     confirmPassword.length > 0 &&
@@ -23,7 +23,7 @@ export default function SignupPage() {
     const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
     const options = {
       redirect_uri: 'http://localhost:5173/auth/google/callback', // Exact same redirect URI
-      client_id: '789586597055-6kjsuuhnhth6kcpknbmtc3pjtnnqo0bp.apps.googleusercontent.com',
+      client_id: `${google_client_id}`,
       access_type: 'offline',
       response_type: 'code',
       prompt: 'consent',
@@ -237,7 +237,7 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-6 py-3 rounded-lg bg-[#a8ff3e] text-black font-semibold hover:bg-[#bfff6e] transition-all duration-300 disabled:opacity-50"
+            className="w-full mt-6 py-3 rounded-lg bg-[#a8ff3e] text-black font-semibold hover:bg-[#bfff6e] transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
           >
             {loading
               ? "Creating Account..."
@@ -255,7 +255,7 @@ export default function SignupPage() {
         <button
           type="button"
           onClick={handleGoogleLogin}
-          className="w-full py-3 rounded-lg border border-[#2a2a2a] bg-[#161616] text-white font-medium hover:bg-[#1e1e1e] transition-all duration-300 flex items-center justify-center gap-2"
+          className="w-full py-3 rounded-lg border border-[#2a2a2a] bg-[#161616] text-white font-medium hover:bg-[#1e1e1e] hover:border-[#a8ff3e] transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.2)] hover:scale-105 flex items-center justify-center gap-2"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.107C18.416 1.421 15.52 0 12.24 0 5.58 0 0 5.37 0 12s5.58 12 12.24 12c6.96 0 11.57-4.854 11.57-11.77 0-.795-.085-1.4-.195-1.945H12.24z" />

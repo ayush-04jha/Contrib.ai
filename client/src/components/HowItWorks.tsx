@@ -8,23 +8,23 @@ function HowItWorks() {
         {/* 3rd */}
        
           <div className="grid grid-cols-4 min-w-6xl ">
-            <div className="border-r border-[#1a1f2e] min-h-35 pl-4 ">
-                <div className="text-[#a8ff3e] text-[11px]">01</div>
+            <div className="border-r border-[#1a1f2e] min-h-35 pl-4 transition-all duration-300 hover:bg-[#11141c] hover:-translate-y-1 cursor-pointer">
+                <div className="text-[#a8ff3e] text-[11px] transition-all duration-300 hover:scale-105">01</div>
                 <div className="font-syne-ExtraBold text-[15px] text-white">Paste a GitHub URL</div>
                 <div className="text-[#556070]">Any public repo, any language.</div>
             </div>
-            <div className="border-x border-[#1a1f2e] pl-4">
-                <div className="text-[#a8ff3e] text-[11px]">02</div>
+            <div className="border-x border-[#1a1f2e] pl-4 transition-all duration-300 hover:bg-[#11141c] hover:-translate-y-1 cursor-pointer">
+                <div className="text-[#a8ff3e] text-[11px] transition-all duration-300 hover:scale-105">02</div>
                 <div className="font-syne-ExtraBold text-[15px] text-white">AI maps the terrain</div>
                 <div className="text-[#556070]">Any public repo, any language.</div>
             </div>
-            <div className="border-x border-[#1a1f2e] pl-4 ">
-                <div className="text-[#a8ff3e] text-[11px]">03</div>
+            <div className="border-x border-[#1a1f2e] pl-4 transition-all duration-300 hover:bg-[#11141c] hover:-translate-y-1 cursor-pointer">
+                <div className="text-[#a8ff3e] text-[11px] transition-all duration-300 hover:scale-105">03</div>
                 <div className="font-syne-ExtraBold text-[15px] text-white">Pick your issue</div>
                 <div className="text-[#556070]">Any public repo, any language.</div>
             </div>
-            <div className="border-l border-[#1a1f2e] pl-4">
-                <div className="text-[#a8ff3e] text-[11px]">04</div>
+            <div className="border-l border-[#1a1f2e] pl-4 transition-all duration-300 hover:bg-[#11141c] hover:-translate-y-1 cursor-pointer">
+                <div className="text-[#a8ff3e] text-[11px] transition-all duration-300 hover:scale-105">04</div>
                 <div className="font-syne-ExtraBold text-[15px] text-white">Ship your PR</div>
                 <div className="text-[#556070]">Any public repo, any language.</div>
             </div>

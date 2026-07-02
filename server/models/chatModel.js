@@ -5,12 +5,12 @@ const conversationSchema = new mongoose.Schema(
       userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: false, // temporary done false
+      required: true, // Now required to prevent orphaned conversations
       index: true,
     },
     repoId: {
       type: String,
-      required: false,
+      required: true, // Also required to associate conversations with repos
       index: true
     },
 

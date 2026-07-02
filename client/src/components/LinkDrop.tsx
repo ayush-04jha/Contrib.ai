@@ -61,7 +61,7 @@ function LinkDrop() {
           />
 
           {/* Button */}
-          <button onClick={analyzeUrl} className="bg-lime-400 text-black px-6 py-3 font-medium cursor-pointer hover:bg-lime-300 transition">
+          <button onClick={analyzeUrl} className="bg-lime-400 text-black px-6 py-3 font-medium cursor-pointer hover:bg-lime-300 transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105">
             Analyze →
           </button>
         </div>
@@ -71,19 +71,19 @@ function LinkDrop() {
       <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-sm">
         <span className="text-gray-500">Try:</span>
 
-        <button className="px-3 py-1 rounded-md bg-[#111820] border border-gray-700 text-gray-300 hover:border-lime-400">
+        <button className="px-3 py-1 rounded-md bg-[#111820] border border-gray-700 text-gray-300 hover:border-lime-400 transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105">
           facebook/react
         </button>
 
-        <button className="px-3 py-1 rounded-md bg-[#111820] border border-gray-700 text-gray-300 hover:border-lime-400">
+        <button className="px-3 py-1 rounded-md bg-[#111820] border border-gray-700 text-gray-300 hover:border-lime-400 transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105">
           vercel/next.js
         </button>
 
-        <button className="px-3 py-1 rounded-md bg-[#111820] border border-gray-700 text-gray-300 hover:border-lime-400">
+        <button className="px-3 py-1 rounded-md bg-[#111820] border border-gray-700 text-gray-300 hover:border-lime-400 transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105">
           microsoft/vscode
         </button>
 
-        <button className="px-3 py-1 rounded-md bg-[#111820] border border-gray-700 text-gray-300 hover:border-lime-400">
+        <button className="px-3 py-1 rounded-md bg-[#111820] border border-gray-700 text-gray-300 hover:border-lime-400 transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105">
           torvalds/linux
         </button>
       </div>

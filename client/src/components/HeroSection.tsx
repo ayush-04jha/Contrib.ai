@@ -35,9 +35,9 @@ function HeroSection() {
 
 
           <div className="flex justify-start space-x-8 mt-6">
-            <button onClick={NavigateToLinkDrop} className="cursor-pointer hover:bg-lime-300 transition h-12 text-[20px] px-6 pb-2 bg-[#a8ff3e] rounded-[5px]">Start contributing free</button>
-            
-            <button className=" bg-[#0d0f14] border border-[#1e2530] text-white rounded-[7px] px-7 ">See a demo</button>
+            <button onClick={NavigateToLinkDrop} className="cursor-pointer hover:bg-lime-300 transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105 h-12 text-[20px] px-6 pb-2 bg-[#a8ff3e] rounded-[5px]">Start contributing free</button>
+
+            <button className="bg-[#0d0f14] border border-[#1e2530] text-white rounded-[7px] px-7 hover:border-[#a8ff3e] transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105">See a demo</button>
           </div>
         </div>
         {/* RightPart */}
