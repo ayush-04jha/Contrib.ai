@@ -55,7 +55,7 @@ export default function LoginPage() {
           navigate(`/chatbox/${firstRepo.jobId}`);
         } else {
           // No repos, navigate to link drop
-          navigate("/pastelink");
+          navigate("/");
         }
       } else {
         setError(res.data?.message || "Login failed");

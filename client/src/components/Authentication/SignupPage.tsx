@@ -62,11 +62,11 @@ export default function SignupPage() {
             navigate(`/chatbox/${firstRepo.jobId}`);
           } else {
             // No repos, navigate to link drop
-            navigate("/pastelink");
+            navigate("/");
           }
         } catch (reposErr) {
           // If checking repos fails, default to link drop
-          navigate("/pastelink");
+          navigate("/");
         }
       } else {
         setError(
