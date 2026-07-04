@@ -28,7 +28,7 @@ export const chatHandler = (socket) => {
         { returnDocument: 'after' }
       );
       console.log("Updated conversation with user message, repoId:", updatedConversation?.repoId);
-      const response = await (axios.post("http://localhost:8000/chat", {
+      const response = await (axios.post(`${process.env.AI_ENGINE_URL || "http://localhost:8000"}/chat`, {
         querry: msg.querry,
         repo_id: msg.repoId
       }))

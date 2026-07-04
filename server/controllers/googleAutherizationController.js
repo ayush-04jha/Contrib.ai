@@ -13,7 +13,7 @@ export const googleAuthorization =async (req, res) => {
             code,
             client_id: process.env.GOOGLE_CLIENT_ID,
             client_secret: process.env.GOOGLE_CLIENT_SECRET,
-            redirect_uri: 'http://localhost:5173/auth/google/callback', // Must match frontend
+            redirect_uri: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5173/auth/google/callback', // Must match frontend
             grant_type: 'authorization_code',
         };
         const tokenResponse = await axios.post(tokenUrl, new URLSearchParams(tokenValues));

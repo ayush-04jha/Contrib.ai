@@ -1,6 +1,6 @@
 import { Hexagon, LogOut, MessageSquare } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import API from "../../axiosSetup/API";
 
 interface User {
@@ -11,8 +11,8 @@ interface User {
 
 function Navbar() {
     const [user, setUser] = useState<User | null>(null);
-    const [repoId, setRepoId] = useState<string | null>(null);
     const navigate = useNavigate();
+    const location = useLocation();
 
 useEffect(() => {
   const storedUser = JSON.parse(
@@ -20,9 +20,6 @@ useEffect(() => {
   );
 
   setUser(storedUser);
-  // Get the last accessed repoId from localStorage
-  const storedRepoId = localStorage.getItem("repoId");
-  setRepoId(storedRepoId);
 }, []);
 
 const handleLogout = async () => {
@@ -30,18 +27,14 @@ const handleLogout = async () => {
         await API.post("/auth/logout");
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        localStorage.removeItem("repoId");
         setUser(null);
-        setRepoId(null);
         navigate("/");
     } catch (error) {
         console.error("Logout error:", error);
         // Even if the API call fails, clear local storage
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        localStorage.removeItem("repoId");
         setUser(null);
-        setRepoId(null);
         navigate("/");
     }
 };
@@ -82,9 +75,18 @@ const handleGoToChatbox = async () => {
             </div>
             {/* middle part */}
             <div className="space-x-7">
-                <a href="" className="text-[#7a8299] ">Features</a>
-                <a href="" className="text-[#7a8299]">How it works</a>
-                <a href="" className="text-[#7a8299] ">Docs</a>
+                {location.pathname === '/' ? (
+                    <>
+                        <a href="#features" className="text-[#7a8299] hover:text-white transition-colors">Features</a>
+                        <a href="#how-it-works" className="text-[#7a8299] hover:text-white transition-colors">How it works</a>
+                    </>
+                ) : (
+                    <>
+                        <a href="/#features" className="text-[#7a8299] hover:text-white transition-colors">Features</a>
+                        <a href="/#how-it-works" className="text-[#7a8299] hover:text-white transition-colors">How it works</a>
+                    </>
+                )}
+                <a href="/docs" className="text-[#7a8299] hover:text-white transition-colors">Docs</a>
 
             </div>
             {/* button */}

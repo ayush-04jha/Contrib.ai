@@ -1,6 +1,6 @@
 function HowItWorks() {
   return (
-    <div className="flex flex-col justify-center items-center min-h-[80vh] gap-8 bg-[#0a0c10]">
+    <div id="how-it-works" className="flex flex-col justify-center items-center min-h-[80vh] gap-8 bg-[#0a0c10]">
         {/* 1st */}
         <div className="bg-[#11141c] border border-[#556070] rounded-2xl px-3 text-[12px] text-[#a8ff3e]">how it works</div>
         {/* 2nd */}

@@ -1,4 +1,3 @@
-import React from "react";
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { createBrowserRouter, createRoutesFromElements, RouterProvider,Route } from "react-router-dom";
@@ -10,6 +9,7 @@ import SignupPage from "./components/Authentication/SignupPage";
 import LoginPage from "./components/Authentication/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import GoogleCallback from "./components/GoogleCallback";
+import Docs from "./Pages/Docs";
 const router = createBrowserRouter(
     createRoutesFromElements(
         <>
@@ -17,6 +17,7 @@ const router = createBrowserRouter(
         <Route path="/login" element={<LoginPage/>}/>
         <Route path="/auth/google/callback" element={<GoogleCallback />} />
         <Route path="/signup" element={<SignupPage/>}/>
+        <Route path="/docs" element={<Docs/>}/>
         <Route 
             path="/pastelink" 
             element={

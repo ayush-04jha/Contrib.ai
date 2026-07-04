@@ -10,11 +10,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const google_client_id = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const google_callback_url = import.meta.env.VITE_GOOGLE_CALLBACK_URL || 'http://localhost:5173/auth/google/callback';
   const handleGoogleLogin = () => {
     const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
     const options = {
-      redirect_uri: 'http://localhost:5173/auth/google/callback', // Vite default port ke hisab se exact string
-      client_id: `${google_client_id}`, // Replace with original ID
+      redirect_uri: google_callback_url,
+      client_id: `${google_client_id}`,
       access_type: 'offline',
       response_type: 'code',
       prompt: 'consent',

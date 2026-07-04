@@ -11,6 +11,8 @@ Thumbs.db
 .env.test.local
 .env.production.local
 */.env
+.env.example
+*/.env.example
 
 # --- Node.js (Frontend & Backend) ---
 node_modules/
@@ -57,3 +59,6 @@ tmp/
 
 # --- Documentation ---
 BUG_REPORT.md
+ai_engine/enhancements.md
+ux_enhancements.md
+DEPLOYMENT.md

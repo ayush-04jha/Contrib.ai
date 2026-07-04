@@ -1,7 +1,7 @@
 
 function FeatureSection() {
     return (
-        <div className="flex flex-col justify-center items-center bg-[#0d0f14]  min-h-[140vh]">
+        <div id="features" className="flex flex-col justify-center items-center bg-[#0d0f14]  min-h-[140vh]">
            <div className="flex flex-col items-center gap-11">
             {/* 1st part */}
             <div className="flex flex-col gap-3  max-w-[70%]">
