@@ -21,6 +21,8 @@ async function processFile(filePath, index, total, jobId, pythonPath, pythonScri
         const normalizedPath = path.normalize(filePath);
         process.stdout.write(`[${index + 1}/${total}] Processing: ${fileName}... `);
         
+        console.log(`🔍 Executing: ${pythonPath} ${pythonScriptPath} ${normalizedPath} ${jobId}`);
+        
         const { stdout, stderr } = await execPromise(
             `"${pythonPath}" "${pythonScriptPath}" "${normalizedPath}" "${jobId}"`,
             { timeout: 60000 }
@@ -43,6 +45,8 @@ async function processFile(filePath, index, total, jobId, pythonPath, pythonScri
         return { success: true, functionsSaved, fileName, index };
     } catch (fileError) {
         console.log(`❌ Skipped ${fileName} (Error in file)`);
+        console.log(`❌ Error details: ${fileError.message}`);
+        console.log(`❌ Full error:`, fileError);
         return { success: false, functionsSaved: 0, fileName, index };
     }
 }
