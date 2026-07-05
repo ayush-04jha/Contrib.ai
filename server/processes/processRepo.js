@@ -117,8 +117,13 @@ export default async function processRepo(url, jobId) {
         }
         console.log(`🚀 Starting Ingestion for ${codeFiles.length} files...`);
         // --- THE VIRTUAL ENVIRONMENT PATHS ---
-        // 1. Point directly to the python.exe INSIDE your .venv
-        const venvPythonPath = path.join(ROOT_DIR, 'ai_engine', '.venv', 'Scripts', 'python.exe');
+        // Cross-platform Python executable detection
+        const isWindows = process.platform === 'win32';
+        const venvPythonPath = isWindows 
+            ? path.join(ROOT_DIR, 'ai_engine', '.venv', 'Scripts', 'python.exe')
+            : path.join(ROOT_DIR, 'ai_engine', '.venv', 'bin', 'python');
+        
+        console.log("🐍 Platform:", process.platform);
         console.log("🐍 Python path:", venvPythonPath);
         console.log("🐍 Python path exists:", fs.existsSync(venvPythonPath));
         //pythonScriptPath is a path to processor.py 
