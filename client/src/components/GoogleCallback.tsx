@@ -12,24 +12,12 @@ function GoogleCallback() {
         if (code) {
             API.post('/auth/google-login', { code })
                 .then(async (res) => {
-                    setStatusMessage("Checking repository data...");
+                    setStatusMessage("Authentication successful!");
                     if (res.data?.user) {
                         localStorage.setItem("user", JSON.stringify(res.data.user));
                     }
-                    try {
-                        // Check if user has existing repos (Same as normal login logic)
-                        const reposRes = await API.get("/user/repos");
-
-                        if (reposRes.data?.count > 0) {
-                            const firstRepo = reposRes.data.repos[0];
-                            navigate(`/chatbox/${firstRepo.jobId}`);
-                        } else {
-                            navigate("/pastelink");
-                        }
-                    } catch (repoErr) {
-                        console.error("Failed to fetch user repos, sending to fallback:", repoErr);
-                        navigate("/pastelink");
-                    }
+                    // Always navigate to landing page after OAuth
+                    navigate("/");
 
                 })
                 .catch(err => {
@@ -42,8 +30,6 @@ function GoogleCallback() {
                 });
         }
         else {
-            console.log("is this running?");
-            
             // navigate('/login');
         }
     }, [searchParams, navigate])

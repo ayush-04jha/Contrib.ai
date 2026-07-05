@@ -6,14 +6,9 @@ function LinkDrop() {
   const [url_link, seturl_link] = useState("")
   const navigate = useNavigate();
   const analyzeUrl = async () => {
-    console.log(url_link);
-
     const res = await API.post("/num", { "link": url_link})
-    console.log(res.data);
     const jobId = res.data.jobId;
     const existing = res.data.existing;
-    console.log("this is jobId hai:", jobId);
-    console.log("is existing repo:", existing);
 
     if (existing) {
       // If repo already exists, go directly to chatbot

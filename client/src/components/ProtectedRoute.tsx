@@ -11,7 +11,6 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
   const location = useLocation();
 
   useEffect(() => {
-    
     const user = localStorage.getItem("user");
 
     if (user) {

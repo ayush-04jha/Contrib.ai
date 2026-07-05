@@ -52,22 +52,8 @@ export default function SignupPage() {
         password,
       });
       if (res.data?.success) {
-        // Check if user has existing repos (should be 0 for new users)
-        try {
-          const reposRes = await API.get("/user/repos");
-
-          if (reposRes.data?.count > 0) {
-            // User has repos, navigate to chatbox with the first repo
-            const firstRepo = reposRes.data.repos[0];
-            navigate(`/chatbox/${firstRepo.jobId}`);
-          } else {
-            // No repos, navigate to link drop
-            navigate("/");
-          }
-        } catch (reposErr) {
-          // If checking repos fails, default to link drop
-          navigate("/");
-        }
+        // Always navigate to landing page after signup
+        navigate("/");
       } else {
         setError(
           res.data?.message ||
@@ -88,15 +74,23 @@ export default function SignupPage() {
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6">
       <div className="w-full max-w-md bg-[#111111] border border-[#2a2a2a] rounded-2xl p-8 shadow-xl">
 
-        {/* Logo */}
-        <div className="flex items-center gap-2 mb-8">
-          <div className="w-8 h-8 bg-[#a8ff3e] rounded-md flex items-center justify-center">
-            <div className="w-4 h-4 border-2 border-black rounded-sm" />
-          </div>
+        {/* Logo and Back Button */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-[#a8ff3e] rounded-md flex items-center justify-center">
+              <div className="w-4 h-4 border-2 border-black rounded-sm" />
+            </div>
 
-          <span className="text-white text-lg font-bold">
-            contrib<span className="text-[#a8ff3e]">.ai</span>
-          </span>
+            <span className="text-white text-lg font-bold">
+              contrib<span className="text-[#a8ff3e]">.ai</span>
+            </span>
+          </div>
+          <button
+            onClick={() => navigate("/")}
+            className="text-[#8a8f98] hover:text-white text-sm flex items-center gap-1 transition-colors"
+          >
+            ← Back
+          </button>
         </div>
 
         <h1 className="text-white text-3xl font-bold mb-2">

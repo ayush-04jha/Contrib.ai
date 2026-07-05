@@ -4,6 +4,7 @@ import { createBrowserRouter, createRoutesFromElements, RouterProvider,Route } f
 import LandingPage from "./Pages/LandingPage";
 import LinkDrop from "./components/LinkDrop";
 import AiChatBox from "./components/AiChatBox"
+import DemoChatBox from "./components/DemoChatBox"
 import Loading from "./components/Loading";
 import SignupPage from "./components/Authentication/SignupPage";
 import LoginPage from "./components/Authentication/LoginPage";
@@ -18,6 +19,7 @@ const router = createBrowserRouter(
         <Route path="/auth/google/callback" element={<GoogleCallback />} />
         <Route path="/signup" element={<SignupPage/>}/>
         <Route path="/docs" element={<Docs/>}/>
+        <Route path="/chatbox/demo" element={<DemoChatBox/>} />
         <Route 
             path="/pastelink" 
             element={

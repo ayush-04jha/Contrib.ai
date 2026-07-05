@@ -28,8 +28,6 @@ function IssuePanel({ jobid }: { jobid: string | undefined }) {
   useEffect(() => {
     const fetchIssues = async () => {
       try {
-        console.log("is rerendering?");
-        
         const res = await API.get(`/issues/${jobid}`);
         const formattedIssues: RepoIssue[] = res.data.map(
           (issue: {
@@ -48,12 +46,11 @@ function IssuePanel({ jobid }: { jobid: string | undefined }) {
             updatedAt: new Date(issue.updated_at).toLocaleString(),
           })
         );
-        console.log("formated issues:",formattedIssues);
         
         setRepoIssues(formattedIssues);
 
       } catch (e) {
-        console.log(e);
+        console.error(e);
 
       }
 

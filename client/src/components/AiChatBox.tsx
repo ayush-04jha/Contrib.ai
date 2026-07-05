@@ -83,7 +83,6 @@ function AiChatBox() {
   // whenever AiChatBox render on UI this socket connect useeffect will run and try to connect a web-socket to the server
   // functions
   const fetchMessage = useCallback(async () => {
-    console.log("frontend convId:", conversationId);
     try {
       const response = await API.get("/messages", {
         params: {
@@ -110,7 +109,6 @@ function AiChatBox() {
   const sendQuerry = () => {
     const message: Message = { sender: "user", text: querry };
     if (!message.text.trim()) return;
-    console.log("Sending query with conversationId:", conversationId, "repoId:", repoId);
     setMessage((prev) => [...prev, message]);
     socket.emit("querry_sent", { conversationId, repoId, querry: message.text });
     updatequerry("");
@@ -130,12 +128,9 @@ function AiChatBox() {
   //useEffects 1
   useEffect(() => {
     const initConversation = async () => {
-      console.log("Initializing conversation with jobId:", jobId, "repoId:", repoId, "urlConversationId:", urlConversationId);
-
       // If conversationId is provided in URL, use it directly
       if (urlConversationId) {
         try {
-          console.log("Loading specific conversation from URL:", urlConversationId);
           const response = await API.get(`/messages`, {
             params: { conversationId: urlConversationId }
           });
@@ -152,21 +147,17 @@ function AiChatBox() {
       // Try to fetch existing conversation by repoId when jobId is present
       if (jobId) {
         try {
-          console.log("Fetching existing conversation for repoId:", jobId);
           const response = await API.get(`/conversation/repo/${jobId}`);
           const existingConversation = response.data;
-          console.log("Found existing conversation:", existingConversation._id, "with messages:", existingConversation.messages?.length);
           setConversationId(existingConversation._id);
           localStorage.setItem(conversationStorageKey, existingConversation._id);
           // Load existing messages
           setMessage(existingConversation.messages || []);
           return;
         } catch (err) {
-          console.log("No existing conversation found, creating new one");
           // If no conversation exists, create a new one
           const res = await API.post("/conversation", { repoId: jobId });
           const newConversationId = res.data._id;
-          console.log("Created new conversation:", newConversationId);
           setConversationId(newConversationId);
           localStorage.setItem(conversationStorageKey, newConversationId);
           return;
@@ -176,12 +167,10 @@ function AiChatBox() {
       // For non-jobId cases, try to reuse existing conversation
       const existingId = localStorage.getItem(conversationStorageKey);
       if (existingId) {
-        console.log("Reusing existing conversation from localStorage:", existingId);
         setConversationId(existingId);
         return;
       }
 
-      console.log("Creating new conversation for non-jobId case");
       const res = await API.post("/conversation", { repoId });
       const newConversationId = res.data._id;
       setConversationId(newConversationId);
@@ -204,15 +193,12 @@ function AiChatBox() {
   //useEffects 3
   useEffect(() => {
     socket.connect();
-    if (socket.connected) {
-      console.log("Already connected:", socket.id);
-    }
     socket.on("connect", () => {
-      console.log("Connected:", socket.id);
+      // Connected
     });
 
     socket.on("disconnect", () => {
-      console.log("Disconnected");
+      // Disconnected
     });
     return () => {
       socket.off("connect");
@@ -277,12 +263,14 @@ function AiChatBox() {
               </div>
             </div>
 
-            {/* Home button - only show if user is logged in */}
-            {user && (
-              <button onClick={navigateToLandingPage} className="rounded bg-lime-400 text-black h-6 font-medium cursor-pointer hover:bg-lime-300 transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105 mr-2 px-2 text-[15px]">
-                Home
-              </button>
-            )}
+            <div className="flex items-center gap-2 mr-2">
+              {/* Home button - only show if user is logged in */}
+              {user && (
+                <button onClick={navigateToLandingPage} className="rounded bg-lime-400 text-black h-6 font-medium cursor-pointer hover:bg-lime-300 transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105 px-2 text-[15px]">
+                  Home
+                </button>
+              )}
+            </div>
           </div>
 
           {/* where do i start */}
