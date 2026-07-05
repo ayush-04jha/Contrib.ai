@@ -15,14 +15,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '../..');
 
 // Process a single file
-async function processFile(filePath, index, total, jobId, venvPythonPath, pythonScriptPath) {
+async function processFile(filePath, index, total, jobId, pythonPath, pythonScriptPath) {
     const fileName = path.basename(filePath);
     try {
         const normalizedPath = path.normalize(filePath);
         process.stdout.write(`[${index + 1}/${total}] Processing: ${fileName}... `);
         
         const { stdout, stderr } = await execPromise(
-            `"${venvPythonPath}" "${pythonScriptPath}" "${normalizedPath}" "${jobId}"`,
+            `"${pythonPath}" "${pythonScriptPath}" "${normalizedPath}" "${jobId}"`,
             { timeout: 60000 }
         );
         
@@ -48,7 +48,7 @@ async function processFile(filePath, index, total, jobId, venvPythonPath, python
 }
 
 // Process files in parallel with controlled concurrency
-async function processFilesInParallel(codeFiles, jobId, venvPythonPath, pythonScriptPath, concurrency = 3) {
+async function processFilesInParallel(codeFiles, jobId, pythonPath, pythonScriptPath, concurrency = 3) {
     let totalFunctionsSaved = 0;
     let completed = 0;
     
@@ -58,7 +58,7 @@ async function processFilesInParallel(codeFiles, jobId, venvPythonPath, pythonSc
         // Process batch in parallel
         const results = await Promise.all(
             batch.map((filePath, batchIndex) => 
-                processFile(filePath, i + batchIndex, codeFiles.length, jobId, venvPythonPath, pythonScriptPath)
+                processFile(filePath, i + batchIndex, codeFiles.length, jobId, pythonPath, pythonScriptPath)
             )
         );
         
@@ -125,15 +125,19 @@ export default async function processRepo(url, jobId) {
         console.log("📂 .venv/bin exists:", fs.existsSync(path.join(ROOT_DIR, 'ai_engine', '.venv', 'bin')));
         
         // --- THE VIRTUAL ENVIRONMENT PATHS ---
-        // Cross-platform Python executable detection
+        // Try venv first, fallback to system python
         const isWindows = process.platform === 'win32';
         const venvPythonPath = isWindows 
             ? path.join(ROOT_DIR, 'ai_engine', '.venv', 'Scripts', 'python.exe')
             : path.join(ROOT_DIR, 'ai_engine', '.venv', 'bin', 'python');
         
+        // Fallback to system python if venv doesn't exist
+        const pythonPath = fs.existsSync(venvPythonPath) ? venvPythonPath : 'python3';
+        
         console.log("🐍 Platform:", process.platform);
-        console.log("🐍 Python path:", venvPythonPath);
-        console.log("🐍 Python path exists:", fs.existsSync(venvPythonPath));
+        console.log("🐍 Venv Python path:", venvPythonPath);
+        console.log("🐍 Venv Python exists:", fs.existsSync(venvPythonPath));
+        console.log("🐍 Using Python:", pythonPath);
         //pythonScriptPath is a path to processor.py 
         const pythonScriptPath = path.join(ROOT_DIR, 'ai_engine', 'processor.py');
         console.log("📜 Processor script path:", pythonScriptPath);
@@ -143,7 +147,7 @@ export default async function processRepo(url, jobId) {
         const totalFunctionsSaved = await processFilesInParallel(
             codeFiles, 
             jobId, 
-            venvPythonPath, 
+            pythonPath, 
             pythonScriptPath,
             3 // Process 3 files concurrently
         );
