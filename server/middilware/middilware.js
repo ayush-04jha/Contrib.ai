@@ -3,8 +3,10 @@ import jwt from "jsonwebtoken";
 export const authMiddleware = (req, res, next) => {
   try {
     const token = req.cookies ? req.cookies.token : null;
+    console.log("Auth Middleware - Request Headers:", Object.keys(req.headers));
     console.log("Auth Middleware - Cookies:", req.cookies);
     console.log("Auth Middleware - Token:", token);
+    console.log("Auth Middleware - Cookie Header:", req.headers.cookie);
     
     if (!token) {
       return res.status(401).json({

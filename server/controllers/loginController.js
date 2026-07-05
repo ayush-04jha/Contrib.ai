@@ -54,6 +54,10 @@ export const login = async (req, res) => {
             }
         );
 
+        console.log("Login successful for user:", user.email);
+        console.log("Setting cookie with token:", token.substring(0, 20) + "...");
+        console.log("NODE_ENV:", process.env.NODE_ENV);
+        
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -62,6 +66,8 @@ export const login = async (req, res) => {
             domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined,
             path: '/'
         });
+        
+        console.log("Cookie set successfully");
         
         return res.status(200).json({
             success: true,
