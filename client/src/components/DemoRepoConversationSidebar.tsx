@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 interface Conversation {
   _id: string;
   title: string;
-  messages: Array<{ sender: string; text: string; createdAt: Date }>;
+  messages: Array<{ sender: string; text: string; createdAt: string }>;
   createdAt: string;
 }
 
@@ -38,15 +38,13 @@ function DemoRepoConversationSidebar() {
       _id: "demo-repo-2",
       jobId: "demo-job-2",
       repoLink: "https://github.com/vercel/next.js",
-      conversations: [],
-      createdAt: new Date().toISOString()
+      conversations: []
     },
     {
       _id: "demo-repo-3",
       jobId: "demo-job-3",
       repoLink: "https://github.com/microsoft/vscode",
-      conversations: [],
-      createdAt: new Date().toISOString()
+      conversations: []
     }
   ]);
   const [expandedRepos, setExpandedRepos] = useState<Set<string>>(new Set(["demo-repo-1"]));
