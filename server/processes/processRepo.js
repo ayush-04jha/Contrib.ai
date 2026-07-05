@@ -25,6 +25,9 @@ async function processFile(filePath, index, total, jobId, venvPythonPath, python
             { timeout: 60000 }
         );
         
+        console.log(`📤 Python stdout: ${stdout}`);
+        console.log(`⚠️ Python stderr: ${stderr}`);
+        
         if (stderr) {
             console.log(`\n❌ ERROR in ${fileName}: ${stderr}`);
         }
@@ -116,9 +119,11 @@ export default async function processRepo(url, jobId) {
         // 1. Point directly to the python.exe INSIDE your .venv
         const venvPythonPath = path.join(ROOT_DIR, 'ai_engine', '.venv', 'Scripts', 'python.exe');
         console.log("🐍 Python path:", venvPythonPath);
+        console.log("🐍 Python path exists:", require('fs').exists(venvPythonPath));
         //pythonScriptPath is a path to processor.py 
         const pythonScriptPath = path.join(ROOT_DIR, 'ai_engine', 'processor.py');
         console.log("📜 Processor script path:", pythonScriptPath);
+        console.log("📜 Processor script exists:", require('fs').exists(pythonScriptPath));
         
         // Process files in parallel with controlled concurrency (3 files at a time)
         const totalFunctionsSaved = await processFilesInParallel(
