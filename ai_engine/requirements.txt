@@ -1,0 +1,6 @@
+pymongo
+tree-sitter
+tree-sitter-python
+tree-sitter-javascript
+python-dotenv
+google-genai

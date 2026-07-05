@@ -102,6 +102,16 @@ export default async function processRepo(url, jobId) {
         console.log("URL:", url);
         console.log("Job ID:", jobId);
         
+        // Install Python dependencies if needed
+        console.log("📦 Installing Python dependencies...");
+        try {
+            const { stdout: pipOutput } = await execPromise('pip3 install -r ai_engine/requirements.txt', { timeout: 120000 });
+            console.log("✅ Dependencies installed:", pipOutput);
+        } catch (pipError) {
+            console.warn("⚠️ Pip install warning:", pipError.message);
+            // Continue even if pip fails (might already be installed)
+        }
+        
         const { targetPath } = await cloneRepository(url, jobId);
         console.log("✅ Repository cloned to:", targetPath);
         
