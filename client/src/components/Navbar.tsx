@@ -2,6 +2,7 @@ import { Hexagon, LogOut, MessageSquare } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import API from "../../axiosSetup/API";
+import GoogleLoginModal from "./GoogleLoginModal";
 
 interface User {
   id: string;
@@ -11,6 +12,7 @@ interface User {
 
 function Navbar() {
     const [user, setUser] = useState<User | null>(null);
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -37,6 +39,10 @@ const handleLogout = async () => {
         setUser(null);
         navigate("/");
     }
+};
+
+const handleLogin = () => {
+    setIsLoginModalOpen(true);
 };
 
 const handleGoToChatbox = async () => {
@@ -115,19 +121,23 @@ const handleGoToChatbox = async () => {
                             </button>
                         </div>
                     ) : (
-                        <>
-                            <a href="/login" className="text-[#7a8299] hover:text-white border border-[#1e2530] rounded-[5px] p-2 transition-all duration-300 hover:border-[#a8ff3e] hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105">
-                                Login
-                            </a>
-                            <a href="/signup" className="bg-[#a8ff3e] text-black rounded-[5px] p-2 hover:bg-[#bfff6e] transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105">
-                                Sign Up
-                            </a>
-                        </>
+                        <button 
+                            onClick={handleLogin}
+                            className="bg-[#a8ff3e] text-black rounded-[5px] px-6 py-2 hover:bg-[#bfff6e] transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105 font-medium"
+                        >
+                            Sign In
+                        </button>
                     )
                 }
             </div>
-
+          {/* Google Login Modal */}
+        <GoogleLoginModal 
+            isOpen={isLoginModalOpen} 
+            onClose={() => setIsLoginModalOpen(false)} 
+        />
         </div>
+        
+        
     )
 }
 

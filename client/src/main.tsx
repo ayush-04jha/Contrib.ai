@@ -6,8 +6,6 @@ import LinkDrop from "./components/LinkDrop";
 import AiChatBox from "./components/AiChatBox"
 import DemoChatBox from "./components/DemoChatBox"
 import Loading from "./components/Loading";
-import SignupPage from "./components/Authentication/SignupPage";
-import LoginPage from "./components/Authentication/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import GoogleCallback from "./components/GoogleCallback";
 import Docs from "./Pages/Docs";
@@ -15,9 +13,7 @@ const router = createBrowserRouter(
     createRoutesFromElements(
         <>
         <Route path="/" element={<LandingPage/>}/>
-        <Route path="/login" element={<LoginPage/>}/>
         <Route path="/auth/google/callback" element={<GoogleCallback />} />
-        <Route path="/signup" element={<SignupPage/>}/>
         <Route path="/docs" element={<Docs/>}/>
         <Route path="/chatbox/demo" element={<DemoChatBox/>} />
         <Route 

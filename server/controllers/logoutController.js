@@ -1,8 +1,7 @@
 export const logout = async (req, res) => {
     try {
-        // Clear the cookie with the same domain
+        // Clear the cookie
         res.clearCookie('token', {
-            domain: '.onrender.com',
             path: '/'
         });
         

@@ -1,9 +1,11 @@
 import { useNavigate } from "react-router-dom"
 import { useEffect, useState } from "react";
+import GoogleLoginModal from "./GoogleLoginModal";
 
 function HeroSection() {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -14,7 +16,7 @@ function HeroSection() {
     if (isAuthenticated) {
       navigate("/pastelink");
     } else {
-      navigate("/login");
+      setIsLoginModalOpen(true);
     }
   }
 
@@ -79,6 +81,12 @@ function HeroSection() {
           
         </div>
       </div>
+      
+      {/* Google Login Modal */}
+      <GoogleLoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+      />
     </>
   )
 }
