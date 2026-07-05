@@ -18,13 +18,25 @@ const app = express();
 const server = http.createServer(app);
 app.use(cookieParser());
 app.use(express.json());
-app.use(cors(
-  {
-   origin: process.env.CLIENT_URL || 'http://localhost:5173',
-    credentials: true
-  }
 
-));
+// CORS configuration for multiple origins
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://contrib-ai-1.onrender.com', // Your production frontend
+  'https://contrib-ai.onrender.com'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 
 app.use("/api", urlProcessingRouter);
 app.use("/api", messagesRouter);

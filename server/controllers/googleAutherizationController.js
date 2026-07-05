@@ -44,10 +44,12 @@ export const googleAuthorization =async (req, res) => {
             }
         );
         res.cookie('token', myAppToken, {
-            httpOnly: true,                         // Ab secure ho gaya (No XSS)
-            secure: process.env.NODE_ENV === 'production', 
-            sameSite: 'lax',                        // CSRF protection
-            maxAge: 7 * 24 * 60 * 60 * 1000,        // 7 din tak cookie chalegi
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined,
+            path: '/'
         });
         return res.status(200).json({ 
             success: true,

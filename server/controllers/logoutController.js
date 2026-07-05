@@ -1,7 +1,11 @@
 export const logout = async (req, res) => {
     try {
-        // For JWT-based auth, logout is mainly handled on the client side
-        // by removing the token from localStorage
+        // Clear the cookie
+        res.clearCookie('token', {
+            domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined,
+            path: '/'
+        });
+        
         return res.status(200).json({
             success: true,
             message: "Logout successful"
