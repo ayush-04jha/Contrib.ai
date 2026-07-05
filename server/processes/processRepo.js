@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { getFiles } from './getFiles.js';
 import { getIO } from '../socket.js';
 import { jobProgress } from '../utils/jobStore.js';
+import fs from 'fs';
 
 // exec is used to run terminal commands but we have to pass the command and the callback function in it which can be little messy and also we can't use async await in it so we promisify it to reduce complexity and to use it in async await style
 const execPromise = util.promisify(exec);
@@ -119,11 +120,11 @@ export default async function processRepo(url, jobId) {
         // 1. Point directly to the python.exe INSIDE your .venv
         const venvPythonPath = path.join(ROOT_DIR, 'ai_engine', '.venv', 'Scripts', 'python.exe');
         console.log("🐍 Python path:", venvPythonPath);
-        console.log("🐍 Python path exists:", require('fs').exists(venvPythonPath));
+        console.log("🐍 Python path exists:", fs.existsSync(venvPythonPath));
         //pythonScriptPath is a path to processor.py 
         const pythonScriptPath = path.join(ROOT_DIR, 'ai_engine', 'processor.py');
         console.log("📜 Processor script path:", pythonScriptPath);
-        console.log("📜 Processor script exists:", require('fs').exists(pythonScriptPath));
+        console.log("📜 Processor script exists:", fs.existsSync(pythonScriptPath));
         
         // Process files in parallel with controlled concurrency (3 files at a time)
         const totalFunctionsSaved = await processFilesInParallel(
