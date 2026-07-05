@@ -90,24 +90,35 @@ async function processFilesInParallel(codeFiles, jobId, venvPythonPath, pythonSc
 
 export default async function processRepo(url, jobId) {
     try {
+        console.log("=== ProcessRepo Function Started ===");
+        console.log("URL:", url);
+        console.log("Job ID:", jobId);
+        
         const { targetPath } = await cloneRepository(url, jobId);
+        console.log("✅ Repository cloned to:", targetPath);
+        
         // we know that the  target path is the path till jobid folder and we are fetching all files from it, which are cloned in that folder from git url
         const allFiles = await getFiles(targetPath)
+        console.log("📁 Total files found:", allFiles.length);
+        
         // extracting the files which have extensions as ['.js', '.py', '.ts', '.jsx']
         const codeFiles = allFiles.filter(file =>
             ['.js', '.py', '.ts', '.jsx', '.tsx'].includes(path.extname(file))
         );
+        console.log("💻 Code files found:", codeFiles.length);
 
         if (codeFiles.length === 0) {
-            console.log("No code files found to parse!");
+            console.log("❌ No code files found to parse!");
             return;
         }
         console.log(`🚀 Starting Ingestion for ${codeFiles.length} files...`);
         // --- THE VIRTUAL ENVIRONMENT PATHS ---
         // 1. Point directly to the python.exe INSIDE your .venv
         const venvPythonPath = path.join(ROOT_DIR, 'ai_engine', '.venv', 'Scripts', 'python.exe');
+        console.log("🐍 Python path:", venvPythonPath);
         //pythonScriptPath is a path to processor.py 
         const pythonScriptPath = path.join(ROOT_DIR, 'ai_engine', 'processor.py');
+        console.log("📜 Processor script path:", pythonScriptPath);
         
         // Process files in parallel with controlled concurrency (3 files at a time)
         const totalFunctionsSaved = await processFilesInParallel(
@@ -135,6 +146,7 @@ export default async function processRepo(url, jobId) {
 
     } catch (err) {
         console.error("❌ Critical System Error:", err.message);
+        console.error("Full error:", err);
     }
 }
 
