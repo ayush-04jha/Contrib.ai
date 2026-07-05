@@ -1,8 +1,8 @@
 export const logout = async (req, res) => {
     try {
-        // Clear the cookie
+        // Clear the cookie with the same domain
         res.clearCookie('token', {
-            domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined,
+            domain: '.onrender.com',
             path: '/'
         });
         
