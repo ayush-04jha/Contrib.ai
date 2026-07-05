@@ -103,17 +103,37 @@ export default async function processRepo(url, jobId) {
         console.log("Job ID:", jobId);
         
         // Install Python dependencies if needed
-        console.log("📦 Installing Python dependencies...");
+        console.log("📦 Setting up Python environment...");
         try {
-            const { stdout: pipOutput, stderr: pipError } = await execPromise('pip3 install --user -r ai_engine/requirements.txt', { timeout: 120000 });
+            // Check if venv exists, if not create it
+            const venvPath = path.join(ROOT_DIR, 'ai_engine', '.venv');
+            if (!fs.existsSync(venvPath)) {
+                console.log("🔧 Creating virtual environment...");
+                await execPromise('python3 -m venv ai_engine/.venv', { timeout: 120000 });
+                console.log("✅ Virtual environment created");
+            } else {
+                console.log("✅ Virtual environment already exists");
+            }
+            
+            // Install dependencies in venv
+            const isWindows = process.platform === 'win32';
+            const pipPath = isWindows 
+                ? path.join(ROOT_DIR, 'ai_engine', '.venv', 'Scripts', 'pip.exe')
+                : path.join(ROOT_DIR, 'ai_engine', '.venv', 'bin', 'pip');
+            
+            console.log("📦 Installing dependencies in venv...");
+            const { stdout: pipOutput, stderr: pipError } = await execPromise(
+                `"${pipPath}" install -r ai_engine/requirements.txt`,
+                { timeout: 120000 }
+            );
             console.log("✅ Dependencies installed:", pipOutput);
             if (pipError) {
                 console.log("⚠️ Pip stderr:", pipError);
             }
         } catch (pipError) {
-            console.error("❌ Pip install failed:", pipError.message);
-            console.error("❌ Full pip error:", pipError);
-            // Continue even if pip fails (might already be installed)
+            console.error("❌ Python setup failed:", pipError.message);
+            console.error("❌ Full error:", pipError);
+            // Continue even if setup fails
         }
         
         const { targetPath } = await cloneRepository(url, jobId);
@@ -143,14 +163,13 @@ export default async function processRepo(url, jobId) {
         console.log("📂 .venv/bin exists:", fs.existsSync(path.join(ROOT_DIR, 'ai_engine', '.venv', 'bin')));
         
         // --- THE VIRTUAL ENVIRONMENT PATHS ---
-        // Try venv first, fallback to system python
+        // Always use venv since we just created/verified it
         const isWindows = process.platform === 'win32';
         const venvPythonPath = isWindows 
             ? path.join(ROOT_DIR, 'ai_engine', '.venv', 'Scripts', 'python.exe')
             : path.join(ROOT_DIR, 'ai_engine', '.venv', 'bin', 'python');
         
-        // Fallback to system python if venv doesn't exist
-        const pythonPath = fs.existsSync(venvPythonPath) ? venvPythonPath : 'python3';
+        const pythonPath = venvPythonPath;
         
         console.log("🐍 Platform:", process.platform);
         console.log("🐍 Venv Python path:", venvPythonPath);
