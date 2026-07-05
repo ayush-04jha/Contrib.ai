@@ -105,10 +105,14 @@ export default async function processRepo(url, jobId) {
         // Install Python dependencies if needed
         console.log("📦 Installing Python dependencies...");
         try {
-            const { stdout: pipOutput } = await execPromise('pip3 install -r ai_engine/requirements.txt', { timeout: 120000 });
+            const { stdout: pipOutput, stderr: pipError } = await execPromise('pip3 install --user -r ai_engine/requirements.txt', { timeout: 120000 });
             console.log("✅ Dependencies installed:", pipOutput);
+            if (pipError) {
+                console.log("⚠️ Pip stderr:", pipError);
+            }
         } catch (pipError) {
-            console.warn("⚠️ Pip install warning:", pipError.message);
+            console.error("❌ Pip install failed:", pipError.message);
+            console.error("❌ Full pip error:", pipError);
             // Continue even if pip fails (might already be installed)
         }
         
