@@ -46,9 +46,9 @@ export const googleAuthorization =async (req, res) => {
         res.cookie('token', myAppToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            sameSite: 'lax', // Changed to 'lax' for better compatibility
             maxAge: 7 * 24 * 60 * 60 * 1000,
-            domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined,
+            // domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined, // Temporarily removed
             path: '/'
         });
         return res.status(200).json({ 
