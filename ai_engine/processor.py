@@ -185,8 +185,14 @@ def process_file(file_path, repo_id):
 if __name__ == "__main__":
     # Usage: python processor.py [file_path] [repo_id] 
     # sys.argv read the python command run in terminal and extract f_path and repo_id from it. we run the command with help of node.js
+    print(f"🔧 Processor.py called with: {sys.argv}")
     if len(sys.argv) > 2:
         f_path = sys.argv[1]
         r_id = sys.argv[2]
+        print(f"📁 Processing file: {f_path}")
+        print(f"🆔 Repo ID: {r_id}")
         processed_count = process_file(f_path, r_id)
         print(json.dumps({"status": "success", "functions_saved": processed_count}))
+    else:
+        print("❌ Error: Missing arguments. Usage: python processor.py [file_path] [repo_id]")
+        print(json.dumps({"status": "error", "message": "Missing arguments"}))
