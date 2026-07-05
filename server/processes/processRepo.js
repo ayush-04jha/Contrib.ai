@@ -116,6 +116,14 @@ export default async function processRepo(url, jobId) {
             return;
         }
         console.log(`🚀 Starting Ingestion for ${codeFiles.length} files...`);
+        console.log("📂 ROOT_DIR:", ROOT_DIR);
+        console.log("📂 AI Engine Dir:", path.join(ROOT_DIR, 'ai_engine'));
+        console.log("📂 AI Engine exists:", fs.existsSync(path.join(ROOT_DIR, 'ai_engine')));
+        console.log("📂 .venv Dir:", path.join(ROOT_DIR, 'ai_engine', '.venv'));
+        console.log("📂 .venv exists:", fs.existsSync(path.join(ROOT_DIR, 'ai_engine', '.venv')));
+        console.log("📂 .venv/bin:", path.join(ROOT_DIR, 'ai_engine', '.venv', 'bin'));
+        console.log("📂 .venv/bin exists:", fs.existsSync(path.join(ROOT_DIR, 'ai_engine', '.venv', 'bin')));
+        
         // --- THE VIRTUAL ENVIRONMENT PATHS ---
         // Cross-platform Python executable detection
         const isWindows = process.platform === 'win32';
