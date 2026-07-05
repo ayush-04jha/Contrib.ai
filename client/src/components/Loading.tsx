@@ -10,32 +10,46 @@ function Loading() {
     const {jobId} = useParams();
     const navigate = useNavigate();
     useEffect(() => {
+        console.log("Loading component - jobId:", jobId);
+        console.log("Socket connected:", socket.connected);
+        
         if (!socket.connected) {
-  socket.connect();
-}
+            socket.connect();
+            console.log("Socket connecting...");
+        }
         
         socket.emit("join", jobId);
+        console.log("Emitted join event for jobId:", jobId);
     
         socket.on("progress", (data) => {
+            console.log("Progress received:", data);
             const percent = data.progress;
-
             setProgress(percent);
             setFile(data.file);
             setStep(data.current);
             setTotal(data.total);
-        }
-        );
+        });
 
         socket.on("done", () => {
+            console.log("Done event received");
             setProgress(100);
             setFile("Completed");
-            navigate(`/chatbox/${jobId}`)
-            
+            navigate(`/chatbox/${jobId}`);
         });
+        
+        socket.on("connect", () => {
+            console.log("Socket connected:", socket.id);
+        });
+        
+        socket.on("disconnect", () => {
+            console.log("Socket disconnected");
+        });
+        
         return () => {
             socket.off("progress");
             socket.off("done");
-           
+            socket.off("connect");
+            socket.off("disconnect");
         };
 
     }, [jobId, navigate])
