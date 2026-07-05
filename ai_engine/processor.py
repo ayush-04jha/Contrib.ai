@@ -49,13 +49,22 @@ def get_parser(file_path):
 def process_file(file_path, repo_id):
     parser, target_node_type = get_parser(file_path)
     if not parser:
+        print(f"❌ Skipped {file_path} (No parser available)")
         return 0
 
-    with open(file_path, "rb") as f:
-        code_content = f.read()
+    try:
+        with open(file_path, "rb") as f:
+            code_content = f.read()
+    except Exception as e:
+        print(f"❌ Skipped {file_path} (Error reading file: {str(e)})")
+        return 0
 
-    tree = parser.parse(code_content)
-    root = tree.root_node
+    try:
+        tree = parser.parse(code_content)
+        root = tree.root_node
+    except Exception as e:
+        print(f"❌ Skipped {file_path} (Parse error: {str(e)})")
+        return 0
 
     embeddings_to_insert = []
     count = 0
@@ -82,9 +91,13 @@ def process_file(file_path, repo_id):
             ]:
                 name_node = node.child_by_field_name("name")
                 if name_node:
-                    name = code_content[
-                        name_node.start_byte : name_node.end_byte
-                    ].decode("utf8")
+                    try:
+                        name = code_content[
+                            name_node.start_byte : name_node.end_byte
+                        ].decode("utf8")
+                    except Exception as e:
+                        print(f"Error decoding name: {e}")
+                        name = None
 
             # 2. Handle React Components (const MyComponent = ...)
             elif node.type in ["lexical_declaration", "variable_declaration"]:
@@ -94,9 +107,12 @@ def process_file(file_path, repo_id):
                     if child.type == "variable_declarator":
                         id_node = child.child_by_field_name("name")
                         if id_node:
-                            name = code_content[
-                                id_node.start_byte : id_node.end_byte
-                            ].decode("utf8")
+                            try:
+                                name = code_content[
+                                    id_node.start_byte : id_node.end_byte
+                                ].decode("utf8")
+                            except Exception as e:
+                                print(f"Error decoding variable name: {e}")
                             break
 
             # 3. Handle Express-style assignments
@@ -108,42 +124,60 @@ def process_file(file_path, repo_id):
                     and right_node
                     and right_node.type in ["function_expression", "arrow_function"]
                 ):
-                    name = code_content[
-                        left_node.start_byte : left_node.end_byte
-                    ].decode("utf8")
+                    try:
+                        name = code_content[
+                            left_node.start_byte : left_node.end_byte
+                        ].decode("utf8")
+                    except Exception as e:
+                        print(f"Error decoding assignment name: {e}")
+                        name = None
 
             if name:
-                body = code_content[node.start_byte : node.end_byte].decode("utf8")
+                try:
+                    body = code_content[node.start_byte : node.end_byte].decode("utf8")
+                except Exception as e:
+                    print(f"Error decoding body: {e}")
+                    body = None
 
-                # --- GEMINI EMBEDDING ---
-                embedding_result = client_ai.models.embed_content(
-                    model="models/gemini-embedding-2-preview",
-                    contents=body,
-                    config={"task_type": "retrieval_document"},
-                )
-                vector = embedding_result.embeddings[0].values
+                if body:
+                    try:
+                        # --- GEMINI EMBEDDING ---
+                        embedding_result = client_ai.models.embed_content(
+                            model="models/gemini-embedding-2-preview",
+                            contents=body,
+                            config={"task_type": "retrieval_document"},
+                        )
+                        vector = embedding_result.embeddings[0].values
 
-                # Collect embedding for batch insert
-                embeddings_to_insert.append(
-                    {
-                        "repo_id": repo_id,
-                        "file_path": file_path,
-                        "name": name,
-                        "code": body,
-                        "embedding": vector,
-                    }
-                )
-                count += 1
+                        # Collect embedding for batch insert
+                        embeddings_to_insert.append(
+                            {
+                                "repo_id": repo_id,
+                                "file_path": file_path,
+                                "name": name,
+                                "code": body,
+                                "embedding": vector,
+                            }
+                        )
+                        count += 1
+                    except Exception as e:
+                        print(f"Error creating embedding for {name}: {e}")
 
         # Recursive call must be OUTSIDE the target_types check but INSIDE walk
         for child in node.children:
             walk(child)
 
-    walk(root)
+    try:
+        walk(root)
+    except Exception as e:
+        print(f"Error walking tree for {file_path}: {e}")
     
     # Batch insert all embeddings from this file
     if embeddings_to_insert:
-        collection.insert_many(embeddings_to_insert)
+        try:
+            collection.insert_many(embeddings_to_insert)
+        except Exception as e:
+            print(f"Error inserting embeddings for {file_path}: {e}")
     
     return count
 
