@@ -14,7 +14,7 @@ try:
 
     # print(" Successfully imported Client from google.genai")
 except ImportError as e:
-    print(f" Import failed: {e}")
+    sys.stderr.write(f" Import failed: {e}\n")
     sys.exit(1)
 # Load variables from .env but don't override existing environment variables
 load_dotenv(override=False)
@@ -23,16 +23,12 @@ load_dotenv(override=False)
 MONGO_URI = os.getenv("MONGO_URI")
 GEMINI_KEY = os.getenv("GEMINI_KEY")
 
-# Debug logging
-print(f"🔍 MONGO_URI set: {bool(MONGO_URI)}")
-print(f"🔍 GEMINI_KEY set: {bool(GEMINI_KEY)}")
-
 if not GEMINI_KEY:
-    print("❌ ERROR: GEMINI_KEY environment variable is not set!")
+    sys.stderr.write("❌ ERROR: GEMINI_KEY environment variable is not set!\n")
     sys.exit(1)
 
 if not MONGO_URI:
-    print("❌ ERROR: MONGO_URI environment variable is not set!")
+    sys.stderr.write("❌ ERROR: MONGO_URI environment variable is not set!\n")
     sys.exit(1)
 
 client_ai = Client(api_key=GEMINI_KEY)
@@ -61,21 +57,21 @@ def get_parser(file_path):
 def process_file(file_path, repo_id):
     parser, target_node_type = get_parser(file_path)
     if not parser:
-        print(f"❌ Skipped {file_path} (No parser available)")
+        sys.stderr.write(f"❌ Skipped {file_path} (No parser available)\n")
         return 0
 
     try:
         with open(file_path, "rb") as f:
             code_content = f.read()
     except Exception as e:
-        print(f"❌ Skipped {file_path} (Error reading file: {str(e)})")
+        sys.stderr.write(f"❌ Skipped {file_path} (Error reading file: {str(e)})\n")
         return 0
 
     try:
         tree = parser.parse(code_content)
         root = tree.root_node
     except Exception as e:
-        print(f"❌ Skipped {file_path} (Parse error: {str(e)})")
+        sys.stderr.write(f"❌ Skipped {file_path} (Parse error: {str(e)})\n")
         return 0
 
     embeddings_to_insert = []
@@ -108,7 +104,7 @@ def process_file(file_path, repo_id):
                             name_node.start_byte : name_node.end_byte
                         ].decode("utf8")
                     except Exception as e:
-                        print(f"Error decoding name: {e}")
+                        sys.stderr.write(f"Error decoding name: {e}\n")
                         name = None
 
             # 2. Handle React Components (const MyComponent = ...)
@@ -124,7 +120,7 @@ def process_file(file_path, repo_id):
                                     id_node.start_byte : id_node.end_byte
                                 ].decode("utf8")
                             except Exception as e:
-                                print(f"Error decoding variable name: {e}")
+                                sys.stderr.write(f"Error decoding variable name: {e}\n")
                             break
 
             # 3. Handle Express-style assignments
@@ -141,14 +137,14 @@ def process_file(file_path, repo_id):
                             left_node.start_byte : left_node.end_byte
                         ].decode("utf8")
                     except Exception as e:
-                        print(f"Error decoding assignment name: {e}")
+                        sys.stderr.write(f"Error decoding assignment name: {e}\n")
                         name = None
 
             if name:
                 try:
                     body = code_content[node.start_byte : node.end_byte].decode("utf8")
                 except Exception as e:
-                    print(f"Error decoding body: {e}")
+                    sys.stderr.write(f"Error decoding body: {e}\n")
                     body = None
 
                 if body:
@@ -173,7 +169,7 @@ def process_file(file_path, repo_id):
                         )
                         count += 1
                     except Exception as e:
-                        print(f"Error creating embedding for {name}: {e}")
+                        sys.stderr.write(f"Error creating embedding for {name}: {e}\n")
 
         # Recursive call must be OUTSIDE the target_types check but INSIDE walk
         for child in node.children:
@@ -182,14 +178,14 @@ def process_file(file_path, repo_id):
     try:
         walk(root)
     except Exception as e:
-        print(f"Error walking tree for {file_path}: {e}")
+        sys.stderr.write(f"Error walking tree for {file_path}: {e}\n")
     
     # Batch insert all embeddings from this file
     if embeddings_to_insert:
         try:
             collection.insert_many(embeddings_to_insert)
         except Exception as e:
-            print(f"Error inserting embeddings for {file_path}: {e}")
+            sys.stderr.write(f"Error inserting embeddings for {file_path}: {e}\n")
     
     return count
 
@@ -197,14 +193,10 @@ def process_file(file_path, repo_id):
 if __name__ == "__main__":
     # Usage: python processor.py [file_path] [repo_id] 
     # sys.argv read the python command run in terminal and extract f_path and repo_id from it. we run the command with help of node.js
-    print(f"🔧 Processor.py called with: {sys.argv}")
     if len(sys.argv) > 2:
         f_path = sys.argv[1]
         r_id = sys.argv[2]
-        print(f"📁 Processing file: {f_path}")
-        print(f"🆔 Repo ID: {r_id}")
         processed_count = process_file(f_path, r_id)
-        print(json.dumps({"status": "success", "functions_saved": processed_count}))
+        sys.stdout.write(json.dumps({"status": "success", "functions_saved": processed_count}))
     else:
-        print("❌ Error: Missing arguments. Usage: python processor.py [file_path] [repo_id]")
-        print(json.dumps({"status": "error", "message": "Missing arguments"}))
+        sys.stdout.write(json.dumps({"status": "error", "message": "Missing arguments"}))

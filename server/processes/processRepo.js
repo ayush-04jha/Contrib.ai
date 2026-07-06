@@ -27,7 +27,11 @@ async function processFile(filePath, index, total, jobId, pythonPath, pythonScri
         const pythonCommand = path.isAbsolute(pythonPath) ? `"${pythonPath}"` : pythonPath;
         const command = `${pythonCommand} "${pythonScriptPath}" "${normalizedPath}" "${jobId}"`;
         
-        const { stdout, stderr } = await execPromise(command, { timeout: 60000 });
+        // Pass environment variables to the child process
+        const { stdout, stderr } = await execPromise(command, { 
+            timeout: 60000,
+            env: { ...process.env } // Inherit all environment variables
+        });
         
         console.log(`📤 Python stdout: ${stdout}`);
         console.log(`⚠️ Python stderr: ${stderr}`);
@@ -123,7 +127,7 @@ export default async function processRepo(url, jobId) {
                     const venvCommand = isWindows 
                         ? `python -m venv "${venvPath}"`
                         : `python3 -m venv "${venvPath}"`;
-                    await execPromise(venvCommand, { timeout: 120000 });
+                    await execPromise(venvCommand, { timeout: 120000, env: { ...process.env } });
                     console.log("✅ Virtual environment created");
                     useVenv = true;
                 } catch (venvError) {
@@ -152,7 +156,7 @@ export default async function processRepo(url, jobId) {
                         const pipCommand = `"${pipPath}" install -r "${requirementsPath}"`;
                         const { stdout: pipOutput, stderr: pipError } = await execPromise(
                             pipCommand,
-                            { timeout: 120000 }
+                            { timeout: 120000, env: { ...process.env } }
                         );
                         console.log("✅ Dependencies installed:", pipOutput);
                         if (pipError) {
@@ -169,14 +173,14 @@ export default async function processRepo(url, jobId) {
                             ? path.join(ROOT_DIR, 'ai_engine', '.venv', 'Scripts', 'python.exe')
                             : path.join(ROOT_DIR, 'ai_engine', '.venv', 'bin', 'python');
                         const ensurepipCommand = `"${venvPython}" -m ensurepip --upgrade`;
-                        await execPromise(ensurepipCommand, { timeout: 60000 });
+                        await execPromise(ensurepipCommand, { timeout: 60000, env: { ...process.env } });
                         console.log("✅ Pip installed via ensurepip");
                         
                         // Try installing dependencies again
                         const pipCommand = `"${pipPath}" install -r "${requirementsPath}"`;
                         const { stdout: pipOutput, stderr: pipError } = await execPromise(
                             pipCommand,
-                            { timeout: 120000 }
+                            { timeout: 120000, env: { ...process.env } }
                         );
                         console.log("✅ Dependencies installed:", pipOutput);
                         if (pipError) {
