@@ -16,12 +16,24 @@ try:
 except ImportError as e:
     print(f" Import failed: {e}")
     sys.exit(1)
-# Load variables from .env
-load_dotenv()
+# Load variables from .env but don't override existing environment variables
+load_dotenv(override=False)
 
 # --- CONFIGURATION ---
 MONGO_URI = os.getenv("MONGO_URI")
 GEMINI_KEY = os.getenv("GEMINI_KEY")
+
+# Debug logging
+print(f"🔍 MONGO_URI set: {bool(MONGO_URI)}")
+print(f"🔍 GEMINI_KEY set: {bool(GEMINI_KEY)}")
+
+if not GEMINI_KEY:
+    print("❌ ERROR: GEMINI_KEY environment variable is not set!")
+    sys.exit(1)
+
+if not MONGO_URI:
+    print("❌ ERROR: MONGO_URI environment variable is not set!")
+    sys.exit(1)
 
 client_ai = Client(api_key=GEMINI_KEY)
 client = MongoClient(MONGO_URI)
