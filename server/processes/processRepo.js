@@ -113,35 +113,28 @@ export default async function processRepo(url, jobId) {
         try {
             // Check if venv exists, if not create it
             const venvPath = path.join(ROOT_DIR, 'ai_engine', '.venv');
+            console.log("🔍 Checking venv path:", venvPath);
+            console.log("🔍 Venv exists:", fs.existsSync(venvPath));
+            
             if (!fs.existsSync(venvPath)) {
                 console.log("🔧 Creating virtual environment...");
                 try {
-                    // For Debian-based systems (like Render), use ensurepip flag
+                    // Standard venv creation
                     const venvCommand = isWindows 
                         ? `python -m venv "${venvPath}"`
-                        : `python3 -m venv --without-pip "${venvPath}" && "${venvPath}/bin/python" -m ensurepip --upgrade`;
+                        : `python3 -m venv "${venvPath}"`;
                     await execPromise(venvCommand, { timeout: 120000 });
                     console.log("✅ Virtual environment created");
                     useVenv = true;
                 } catch (venvError) {
-                    console.error("⚠️ Failed to create venv, trying without ensurepip:", venvError.message);
-                    try {
-                        // Fallback to standard venv creation
-                        const fallbackCommand = isWindows 
-                            ? `python -m venv "${venvPath}"`
-                            : `python3 -m venv "${venvPath}"`;
-                        await execPromise(fallbackCommand, { timeout: 120000 });
-                        console.log("✅ Virtual environment created (fallback)");
-                        useVenv = true;
-                    } catch (fallbackError) {
-                        console.error("⚠️ Failed to create venv, will use system Python:", fallbackError.message);
-                        useVenv = false;
-                    }
+                    console.error("⚠️ Failed to create venv, will use system Python:", venvError.message);
+                    useVenv = false;
                 }
             } else {
                 console.log("✅ Virtual environment already exists");
                 useVenv = true;
             }
+            console.log("🔍 useVenv after venv check:", useVenv);
             
             if (useVenv) {
                 // Install dependencies in venv
@@ -149,21 +142,50 @@ export default async function processRepo(url, jobId) {
                     ? path.join(ROOT_DIR, 'ai_engine', '.venv', 'Scripts', 'pip.exe')
                     : path.join(ROOT_DIR, 'ai_engine', '.venv', 'bin', 'pip');
                 
+                console.log("🔍 Pip path:", pipPath);
+                console.log("🔍 Pip exists:", fs.existsSync(pipPath));
+                
                 // Check if pip exists in venv
                 if (fs.existsSync(pipPath)) {
                     console.log("📦 Installing dependencies in venv...");
-                    const pipCommand = `"${pipPath}" install -r "${requirementsPath}"`;
-                    const { stdout: pipOutput, stderr: pipError } = await execPromise(
-                        pipCommand,
-                        { timeout: 120000 }
-                    );
-                    console.log("✅ Dependencies installed:", pipOutput);
-                    if (pipError) {
-                        console.log("⚠️ Pip stderr:", pipError);
+                    try {
+                        const pipCommand = `"${pipPath}" install -r "${requirementsPath}"`;
+                        const { stdout: pipOutput, stderr: pipError } = await execPromise(
+                            pipCommand,
+                            { timeout: 120000 }
+                        );
+                        console.log("✅ Dependencies installed:", pipOutput);
+                        if (pipError) {
+                            console.log("⚠️ Pip stderr:", pipError);
+                        }
+                    } catch (pipInstallError) {
+                        console.error("⚠️ Failed to install dependencies in venv:", pipInstallError.message);
+                        console.log("⚠️ Will try to use venv Python anyway, but dependencies may be missing");
                     }
                 } else {
-                    console.log("⚠️ Pip not found in venv, will use system Python");
-                    useVenv = false;
+                    console.log("⚠️ Pip not found in venv, trying to ensurepip...");
+                    try {
+                        const venvPython = isWindows 
+                            ? path.join(ROOT_DIR, 'ai_engine', '.venv', 'Scripts', 'python.exe')
+                            : path.join(ROOT_DIR, 'ai_engine', '.venv', 'bin', 'python');
+                        const ensurepipCommand = `"${venvPython}" -m ensurepip --upgrade`;
+                        await execPromise(ensurepipCommand, { timeout: 60000 });
+                        console.log("✅ Pip installed via ensurepip");
+                        
+                        // Try installing dependencies again
+                        const pipCommand = `"${pipPath}" install -r "${requirementsPath}"`;
+                        const { stdout: pipOutput, stderr: pipError } = await execPromise(
+                            pipCommand,
+                            { timeout: 120000 }
+                        );
+                        console.log("✅ Dependencies installed:", pipOutput);
+                        if (pipError) {
+                            console.log("⚠️ Pip stderr:", pipError);
+                        }
+                    } catch (ensurepipError) {
+                        console.error("⚠️ Failed to install pip via ensurepip:", ensurepipError.message);
+                        console.log("⚠️ Will try to use venv Python anyway, but dependencies may be missing");
+                    }
                 }
             }
         } catch (pipError) {
@@ -204,7 +226,7 @@ export default async function processRepo(url, jobId) {
             ? path.join(ROOT_DIR, 'ai_engine', '.venv', 'Scripts', 'python.exe')
             : path.join(ROOT_DIR, 'ai_engine', '.venv', 'bin', 'python');
         
-        // Use venv Python if available and venv was successfully set up
+        // Use venv Python if venv was successfully set up (even if pip install failed)
         if (useVenv && fs.existsSync(venvPythonPath)) {
             pythonPath = venvPythonPath;
             console.log("🐍 Using venv Python:", pythonPath);
@@ -219,6 +241,7 @@ export default async function processRepo(url, jobId) {
         console.log("🐍 Platform:", process.platform);
         console.log("🐍 Venv Python path:", venvPythonPath);
         console.log("🐍 Venv Python exists:", fs.existsSync(venvPythonPath));
+        console.log("🐍 useVenv flag:", useVenv);
         //pythonScriptPath is a path to processor.py 
         const pythonScriptPath = path.join(ROOT_DIR, 'ai_engine', 'processor.py');
         console.log("📜 Processor script path:", pythonScriptPath);
