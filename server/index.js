@@ -43,6 +43,12 @@ app.use("/api", createConversationRouter);
 app.use("/api", repoIssuesRouter);
 app.use("/api", authRouter);
 app.use("/api",googleAutherizationRouter);
+
+// Health check endpoint for keep-alive services
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 initSocket(server);
 
 const startServer = async () => {
