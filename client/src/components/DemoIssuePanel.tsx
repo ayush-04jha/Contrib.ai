@@ -1,3 +1,5 @@
+import { X } from "lucide-react";
+
 function DemoIssuePanel() {
   const demoIssues = [
     {
@@ -59,19 +61,30 @@ function DemoIssuePanel() {
     return "text-gray-400";
   };
 
+  const closeSidebar = () => {
+    const event = new CustomEvent('closeIssuePanel');
+    window.dispatchEvent(event);
+  };
+
   return (
-    <aside className="flex flex-col border-l border-[#1E2530] bg-[#0d0f14] w-80">
+    <aside className="flex flex-col border-l border-[#1E2530] bg-[#0d0f14] w-full md:w-80 h-full">
       {/* Header */}
-      <div className="border-b border-[#1E2530] px-4 py-3">
+      <div className="border-b border-[#1E2530] px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-[#a8ff3e] rounded-sm" />
-          <div className="font-syne-Bold text-[13px] text-white">Demo Issues</div>
+          <div className="font-syne-Bold text-[13px] md:text-[15px] text-white">Demo Issues</div>
         </div>
+        <button
+          onClick={closeSidebar}
+          className="md:hidden text-[#6b7788] hover:text-white transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Stats */}
       <div className="border-b border-[#1E2530] bg-[#11141C] px-4 py-2">
-        <div className="flex items-center justify-between text-[10px]">
+        <div className="flex items-center justify-between text-[10px] md:text-[11px]">
           <div className="flex gap-3 text-[#6b7788]">
             <div>
               <span className="text-white font-semibold">{demoIssues.length}</span> issues
@@ -91,7 +104,7 @@ function DemoIssuePanel() {
         {demoIssues.map((issue) => (
           <div key={issue.id} className="border border-[#1E2530] rounded-lg bg-[#11141C] p-3 hover:border-[#a8ff3e] transition-all duration-300 hover:shadow-[0_0_10px_rgba(168,255,62,0.2)]">
             {/* Issue Title */}
-            <div className="text-white text-[11px] font-semibold mb-2 hover:text-[#a8ff3e] transition-colors cursor-pointer">
+            <div className="text-white text-[11px] md:text-[12px] font-semibold mb-2 hover:text-[#a8ff3e] transition-colors cursor-pointer">
               {issue.title}
             </div>
 
@@ -100,7 +113,7 @@ function DemoIssuePanel() {
               {issue.labels.map((label, idx) => (
                 <span
                   key={idx}
-                  className={`px-2 py-0.5 rounded text-[9px] border ${getLabelColor(label)}`}
+                  className={`px-2 py-0.5 rounded text-[8px] md:text-[9px] border ${getLabelColor(label)}`}
                 >
                   {label}
                 </span>
@@ -108,9 +121,9 @@ function DemoIssuePanel() {
             </div>
 
             {/* Meta Info */}
-            <div className="flex items-center justify-between text-[9px] text-[#6b7788]">
+            <div className="flex items-center justify-between text-[9px] md:text-[10px] text-[#6b7788]">
               <div className="flex items-center gap-2">
-                <span>{issue.author}</span>
+                <span className="text-[8px] md:text-[9px]">{issue.author}</span>
                 <span>•</span>
                 <span className={getDifficultyColor(issue.difficulty)}>
                   {issue.difficulty}
@@ -119,10 +132,10 @@ function DemoIssuePanel() {
             </div>
 
             {/* Files */}
-            <div className="mt-2 text-[9px] text-[#6b7788]">
+            <div className="mt-2 text-[9px] md:text-[10px] text-[#6b7788]">
               <div className="font-medium mb-1">Files:</div>
               {issue.files.map((file, idx) => (
-                <div key={idx} className="text-[#a8ff3e] font-mono">
+                <div key={idx} className="text-[#a8ff3e] font-mono text-[8px] md:text-[9px] break-all">
                   {file}
                 </div>
               ))}

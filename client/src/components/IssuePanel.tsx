@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../../axiosSetup/API";
+import { X } from "lucide-react";
 
 type RepoIssue = {
   id: number;
@@ -58,7 +59,12 @@ function IssuePanel({ jobid }: { jobid: string | undefined }) {
     if (jobid) {
       fetchIssues();
     }
-  }, [])
+  }, []);
+
+  const closeSidebar = () => {
+    const event = new CustomEvent('closeIssuePanel');
+    window.dispatchEvent(event);
+  };
 
 
 
@@ -67,16 +73,22 @@ function IssuePanel({ jobid }: { jobid: string | undefined }) {
 
 
   return (
-    <aside className="flex max-h-screen flex-col border-t border-[#1E2530] bg-[#0d0f14] xl:border-l xl:border-t-0">
-      <div className="border-b border-[#1E2530] px-4 py-3">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <div className="font-syne-Bold text-[13px] text-white">Repo issues</div>
-            <div className="text-[12px] text-[#6b7788]">{filteredIssues.length} matching issues</div>
-          </div>
+    <aside className="flex max-h-screen flex-col border-t border-[#1E2530] bg-[#0d0f14] xl:border-l xl:border-t-0 w-full md:w-80 h-full">
+      <div className="border-b border-[#1E2530] px-4 py-3 flex items-center justify-between">
+        <div>
+          <div className="font-syne-Bold text-[13px] md:text-[15px] text-white">Repo issues</div>
+          <div className="text-[12px] text-[#6b7788]">{filteredIssues.length} matching issues</div>
+        </div>
+        <div className="flex items-center gap-2">
           <div className="rounded-[5px] border border-[#2a3048] bg-[#11141C] px-2 py-1 text-[11px] text-[#828FAC]">
             fix them
           </div>
+          <button
+            onClick={closeSidebar}
+            className="md:hidden text-[#6b7788] hover:text-white transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
@@ -103,7 +115,7 @@ function IssuePanel({ jobid }: { jobid: string | undefined }) {
         {filteredIssues.map((issue) => (
           <article key={issue.id} className="rounded-[8px] border border-[#1E2530] bg-[#11141C] p-3 transition-all duration-300 hover:border-[#a8ff3e] hover:shadow-[0_0_10px_rgba(168,255,62,0.2)] hover:-translate-y-0.5 cursor-pointer">
             <div className="mb-2 flex items-center justify-between gap-3">
-              <span className="font-syne-jetBrains text-[11px] text-[#6b7788] transition-all duration-300 hover:text-[#a8ff3e]">#{issue.number}</span>
+              <span className="font-syne-jetBrains text-[11px] md:text-[12px] text-[#6b7788] transition-all duration-300 hover:text-[#a8ff3e]">#{issue.number}</span>
               <span className={`rounded-[5px] border px-2 py-0.5 text-[10px] transition-all duration-300 ${issue.status === "open"
                 ? "border-[#244f38] bg-[#102018] text-[#7ed9a4]"
                 : "border-[#4c3f25] bg-[#211a10] text-[#d7b46a]"
@@ -111,7 +123,7 @@ function IssuePanel({ jobid }: { jobid: string | undefined }) {
                 {issue.status}
               </span>
             </div>
-            <h2 className="text-[13px] leading-5 text-white transition-all duration-300 hover:text-[#a8ff3e]">{issue.title}</h2>
+            <h2 className="text-[13px] md:text-[14px] leading-5 text-white transition-all duration-300 hover:text-[#a8ff3e]">{issue.title}</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {issue.labels.map((label) => (
                 <span key={label} className="rounded-[5px] border border-[#2a3048] bg-[#1a2035] px-2 py-0.5 text-[10px] text-[#AAB5CC] transition-all duration-300 hover:border-[#a8ff3e] hover:text-[#a8ff3e]">

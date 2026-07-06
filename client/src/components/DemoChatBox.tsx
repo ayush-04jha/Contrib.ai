@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LogoIcon from "./LogoIcon";
 import SendIcon from "./SendIcon";
 import DemoIssuePanel from "./DemoIssuePanel";
 import DemoRepoConversationSidebar from "./DemoRepoConversationSidebar";
 import { useNavigate } from "react-router-dom";
+import { ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
 
 type Sender = "user" | "bot";
 type Message = {
@@ -28,7 +29,27 @@ function DemoChatBox() {
       text: "I found 23 good first issues in facebook/react. Here are the top 3:\n\n1. **Issue #28304** - Fix hydration mismatch in strict mode\n   - Difficulty: Easy\n   - Files involved: `src/react/ReactFiberWorkLoop.js`\n\n2. **Issue #28491** - Update documentation for useCallback\n   - Difficulty: Easy\n   - Files involved: `docs/hooks-reference.md`\n\n3. **Issue #28502** - Add TypeScript types for new API\n   - Difficulty: Medium\n   - Files involved: `types/react/index.d.ts`\n\nWould you like me to explain any of these issues in detail?" 
     }
   ]);
+  const [showRepoSidebar, setShowRepoSidebar] = useState(false);
+  const [showIssuePanel, setShowIssuePanel] = useState(false);
   const navigate = useNavigate();
+
+  // Handle custom event to close repo sidebar
+  useEffect(() => {
+    const handleCloseRepoSidebar = () => {
+      setShowRepoSidebar(false);
+    };
+
+    const handleCloseIssuePanel = () => {
+      setShowIssuePanel(false);
+    };
+
+    window.addEventListener('closeRepoSidebar', handleCloseRepoSidebar);
+    window.addEventListener('closeIssuePanel', handleCloseIssuePanel);
+    return () => {
+      window.removeEventListener('closeRepoSidebar', handleCloseRepoSidebar);
+      window.removeEventListener('closeIssuePanel', handleCloseIssuePanel);
+    };
+  }, []);
 
   const sendQuerry = () => {
     const demoResponse: Message = { 
@@ -100,45 +121,77 @@ function DemoChatBox() {
         .formatted-message li {
           margin-bottom: 0.25rem;
         }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
       `}</style>
       <div className="grid min-h-screen grid-cols-1 xl:grid-cols-[auto_minmax(0,1fr)_360px]">
-        <DemoRepoConversationSidebar />
+        {/* Mobile Repo Sidebar Toggle */}
+        <div className="xl:hidden fixed top-20 left-4 z-50">
+          <button
+            onClick={() => setShowRepoSidebar(!showRepoSidebar)}
+            className="bg-[#11141C] border border-[#1E2530] p-2 rounded-lg text-[#a8ff3e] hover:bg-[#1a2035] transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)]"
+          >
+            {showRepoSidebar ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+
+        {/* Mobile Issue Panel Toggle */}
+        <div className="xl:hidden fixed top-20 right-4 z-50">
+          <button
+            onClick={() => setShowIssuePanel(!showIssuePanel)}
+            className="bg-[#11141C] border border-[#1E2530] p-2 rounded-lg text-[#a8ff3e] hover:bg-[#1a2035] transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)]"
+          >
+            {showIssuePanel ? <X className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+          </button>
+        </div>
+
+        {/* Repo Sidebar */}
+        <div className={`${showRepoSidebar ? 'fixed inset-0 z-40' : 'hidden'} xl:static xl:block xl:z-auto`}>
+          <DemoRepoConversationSidebar />
+        </div>
+
+        {/* Main Chat Section */}
         <section className="flex min-h-screen flex-col border-r border-[#1E2530]">
           {/* contrib.ai assistant */}
-          <div className="border border-[#1E2530] flex items-center justify-between">
-            <div className="flex gap-3.5 pl-4">
+          <div className="border border-[#1E2530] flex items-center justify-between px-4 py-3">
+            <div className="flex gap-3.5 items-center">
               <LogoIcon />
               <div className="text-white">
-                <div className="font-syne-Bold text-[13px]">contrib.ai assistant</div>
+                <div className="font-syne-Bold text-[13px] md:text-[15px]">contrib.ai assistant</div>
                 <div className="text-[12px] text-[#6b7788]">Demo Mode</div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 mr-2">
+            <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 bg-[#1e2530] text-[#8895b3] px-2 py-0.5 rounded text-[9px] font-medium tracking-wide">
                 <div className="w-1 h-1 bg-[#a8ff3e] rounded-full"></div>
                 <span>DEMO</span>
               </div>
-              <button onClick={navigateToLandingPage} className="rounded bg-lime-400 text-black h-8 font-medium cursor-pointer hover:bg-lime-300 transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105 px-4 text-[15px]">
+              <button onClick={navigateToLandingPage} className="rounded bg-lime-400 text-black h-8 font-medium cursor-pointer hover:bg-lime-300 transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105 px-3 md:px-4 text-[13px] md:text-[15px]">
                 ← Home
               </button>
             </div>
           </div>
 
           {/* where do i start */}
-          <div className="flex gap-3 overflow-x-auto border border-[#1E2530] p-2 text-[11px] text-white">
-            <div className="whitespace-nowrap rounded-[5px] border-2 border-[#1E2530] bg-[#11141C] px-2 text-[#828FAC] transition-all duration-300 hover:border-[#a8ff3e] hover:text-[#a8ff3e] cursor-pointer">Where do I start?</div>
-            <div className="whitespace-nowrap rounded-[5px] border-2 border-[#1E2530] bg-[#11141C] px-2 text-[#828FAC] transition-all duration-300 hover:border-[#a8ff3e] hover:text-[#a8ff3e] cursor-pointer">Explain the architecture</div>
-            <div className="whitespace-nowrap rounded-[5px] border-2 border-[#1E2530] bg-[#11141C] px-2 text-[#828FAC] transition-all duration-300 hover:border-[#a8ff3e] hover:text-[#a8ff3e] cursor-pointer">Find a good first issue</div>
-            <div className="whitespace-nowrap rounded-[5px] border-2 border-[#1E2530] bg-[#11141C] px-2 text-[#828FAC] transition-all duration-300 hover:border-[#a8ff3e] hover:text-[#a8ff3e] cursor-pointer">How do I run this locally?</div>
+          <div className="flex gap-3 overflow-x-auto border border-[#1E2530] p-2 text-[11px] text-white scrollbar-hide">
+            <div className="whitespace-nowrap rounded-[5px] border-2 border-[#1E2530] bg-[#11141C] px-2 md:px-3 text-[#828FAC] transition-all duration-300 hover:border-[#a8ff3e] hover:text-[#a8ff3e] cursor-pointer">Where do I start?</div>
+            <div className="whitespace-nowrap rounded-[5px] border-2 border-[#1E2530] bg-[#11141C] px-2 md:px-3 text-[#828FAC] transition-all duration-300 hover:border-[#a8ff3e] hover:text-[#a8ff3e] cursor-pointer">Explain the architecture</div>
+            <div className="whitespace-nowrap rounded-[5px] border-2 border-[#1E2530] bg-[#11141C] px-2 md:px-3 text-[#828FAC] transition-all duration-300 hover:border-[#a8ff3e] hover:text-[#a8ff3e] cursor-pointer">Find a good first issue</div>
+            <div className="whitespace-nowrap rounded-[5px] border-2 border-[#1E2530] bg-[#11141C] px-2 md:px-3 text-[#828FAC] transition-all duration-300 hover:border-[#a8ff3e] hover:text-[#a8ff3e] cursor-pointer">How do I run this locally?</div>
           </div>
 
           {/* chat app */}
-          <div className="flex min-h-[60vh] flex-1 flex-col gap-2 overflow-y-auto p-3.5 py-auto">
+          <div className="flex min-h-[50vh] md:min-h-[60vh] flex-1 flex-col gap-2 overflow-y-auto p-3.5 py-auto">
             {messages.map((msg: Message, i: number) => (
               <div
                 key={i}
-                className={`max-w-[80%] rounded-lg px-4 py-3 text-[14px] transition-all duration-300 hover:scale-102 hover:shadow-[0_0_10px_rgba(168,255,62,0.2)] ${msg.sender === "user" ? "ml-auto border border-[#1e2530] bg-[#11141c]" : "border-2 border-[#2a3048] bg-[#1a2035]"
+                className={`max-w-[90%] md:max-w-[80%] rounded-lg px-3 md:px-4 py-2 md:py-3 text-[12px] md:text-[14px] transition-all duration-300 hover:scale-102 hover:shadow-[0_0_10px_rgba(168,255,62,0.2)] ${msg.sender === "user" ? "ml-auto border border-[#1e2530] bg-[#11141c]" : "border-2 border-[#2a3048] bg-[#1a2035]"
                   }`}
               >
                 <div className="text-gray-300 leading-relaxed formatted-message" dangerouslySetInnerHTML={{ __html: formatMessage(msg.text) }} />
@@ -147,7 +200,7 @@ function DemoChatBox() {
           </div>
 
           {/* input box */}
-          <div className="flex h-[10vh] items-center justify-around  px-4 pr-4">
+          <div className="flex h-[12vh] md:h-[10vh] items-center justify-around px-4">
             <input
               type="text"
               onKeyDown={handleKeyDown}
@@ -155,7 +208,7 @@ function DemoChatBox() {
               onChange={(e) => { updatequerry(e.target.value) }}
               placeholder="Demo mode - Sign up to interact with real repos!"
               disabled
-              className="h-[65%] min-w-[95%] rounded-2xl border-2 border-[#1E2530] pl-3 text-white transition-all duration-300 focus:border-[#a8ff3e] focus:shadow-[0_0_10px_rgba(168,255,62,0.3)] opacity-50 cursor-not-allowed"
+              className="h-[65%] min-w-[85%] md:min-w-[95%] rounded-2xl border-2 border-[#1E2530] pl-3 text-white transition-all duration-300 focus:border-[#a8ff3e] focus:shadow-[0_0_10px_rgba(168,255,62,0.3)] opacity-50 cursor-not-allowed text-sm md:text-base"
             />
 
             <button 
@@ -168,7 +221,10 @@ function DemoChatBox() {
           </div>
         </section>
 
-        <DemoIssuePanel />
+        {/* Issue Panel */}
+        <div className={`${showIssuePanel ? 'fixed inset-0 z-40' : 'hidden'} xl:static xl:block xl:z-auto`}>
+          <DemoIssuePanel />
+        </div>
       </div>
     </div>
   );

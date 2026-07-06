@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronRight, MessageSquare, FolderOpen, Plus } from "lucide-react";
+import { ChevronDown, ChevronRight, MessageSquare, FolderOpen, Plus, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import API from "../../axiosSetup/API";
 
@@ -123,28 +123,39 @@ function RepoConversationSidebar() {
 
   const totalConversations = repos.reduce((acc, repo) => acc + repo.conversations.length, 0);
 
+  const closeSidebar = () => {
+    const event = new CustomEvent('closeRepoSidebar');
+    window.dispatchEvent(event);
+  };
+
   return (
-    <aside className="flex flex-col border-r border-[#1E2530] bg-[#0d0f14] w-80">
+    <aside className="flex flex-col border-r border-[#1E2530] bg-[#0d0f14] w-full md:w-80 h-full">
       {/* Header */}
-      <div className="border-b border-[#1E2530] px-4 py-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <FolderOpen className="w-4 h-4 text-[#a8ff3e]" />
-            <div className="font-syne-Bold text-[13px] text-white">Repositories</div>
-          </div>
+      <div className="border-b border-[#1E2530] px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <FolderOpen className="w-4 h-4 text-[#a8ff3e]" />
+          <div className="font-syne-Bold text-[13px] md:text-[15px] text-white">Repositories</div>
+        </div>
+        <div className="flex items-center gap-2">
           <button
             onClick={handleAddRepo}
             className="flex items-center gap-1 text-[#a8ff3e] hover:text-[#bfff6e] text-[11px] font-medium transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,255,62,0.3)] hover:scale-105"
           >
             <Plus className="w-4 h-4" />
-            <span>Add</span>
+            <span className="hidden md:inline">Add</span>
+          </button>
+          <button
+            onClick={closeSidebar}
+            className="md:hidden text-[#6b7788] hover:text-white transition-colors"
+          >
+            <X className="w-5 h-5" />
           </button>
         </div>
       </div>
 
       {/* Stats Bar */}
       <div className="border-b border-[#1E2530] bg-[#11141C] px-4 py-2">
-        <div className="flex items-center justify-between text-[10px]">
+        <div className="flex items-center justify-between text-[10px] md:text-[11px]">
           <div className="flex gap-3 text-[#6b7788]">
             <div>
               <span className="text-white font-semibold">{repos.length}</span> repos
@@ -191,7 +202,7 @@ function RepoConversationSidebar() {
                     <ChevronRight className="w-3 h-3 text-[#6b7788] flex-shrink-0 transition-all duration-300 hover:text-[#a8ff3e]" />
                   )}
                   <div className="flex flex-col items-start min-w-0">
-                    <span className="text-white font-semibold text-[11px] font-syne-Bold truncate transition-all duration-300 hover:text-[#a8ff3e]">
+                    <span className="text-white font-semibold text-[11px] md:text-[12px] font-syne-Bold truncate transition-all duration-300 hover:text-[#a8ff3e]">
                       {extractRepoName(repo.repoLink)}
                     </span>
                     <span className="text-[10px] text-[#6b7788]">
