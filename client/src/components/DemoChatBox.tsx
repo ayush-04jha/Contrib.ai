@@ -4,7 +4,7 @@ import SendIcon from "./SendIcon";
 import DemoIssuePanel from "./DemoIssuePanel";
 import DemoRepoConversationSidebar from "./DemoRepoConversationSidebar";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
+import { ChevronRight, Menu, X } from "lucide-react";
 
 type Sender = "user" | "bot";
 type Message = {
