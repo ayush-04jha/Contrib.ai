@@ -23,10 +23,11 @@ async function processFile(filePath, index, total, jobId, pythonPath, pythonScri
         
         console.log(`🔍 Executing: ${pythonPath} ${pythonScriptPath} ${normalizedPath} ${jobId}`);
         
-        const { stdout, stderr } = await execPromise(
-            `"${pythonPath}" "${pythonScriptPath}" "${normalizedPath}" "${jobId}"`,
-            { timeout: 60000 }
-        );
+        // Handle both absolute paths and simple commands like 'python3'
+        const pythonCommand = path.isAbsolute(pythonPath) ? `"${pythonPath}"` : pythonPath;
+        const command = `${pythonCommand} "${pythonScriptPath}" "${normalizedPath}" "${jobId}"`;
+        
+        const { stdout, stderr } = await execPromise(command, { timeout: 60000 });
         
         console.log(`📤 Python stdout: ${stdout}`);
         console.log(`⚠️ Python stderr: ${stderr}`);
@@ -104,36 +105,58 @@ export default async function processRepo(url, jobId) {
         
         // Install Python dependencies if needed
         console.log("📦 Setting up Python environment...");
+        let useVenv = false;
+        let pythonPath = 'python3';
+        const isWindows = process.platform === 'win32';
+        
         try {
             // Check if venv exists, if not create it
             const venvPath = path.join(ROOT_DIR, 'ai_engine', '.venv');
             if (!fs.existsSync(venvPath)) {
                 console.log("🔧 Creating virtual environment...");
-                await execPromise('python3 -m venv ai_engine/.venv', { timeout: 120000 });
-                console.log("✅ Virtual environment created");
+                try {
+                    const venvCommand = isWindows 
+                        ? `python -m venv "${venvPath}"`
+                        : `python3 -m venv "${venvPath}"`;
+                    await execPromise(venvCommand, { timeout: 120000 });
+                    console.log("✅ Virtual environment created");
+                    useVenv = true;
+                } catch (venvError) {
+                    console.error("⚠️ Failed to create venv, will use system Python:", venvError.message);
+                    useVenv = false;
+                }
             } else {
                 console.log("✅ Virtual environment already exists");
+                useVenv = true;
             }
             
-            // Install dependencies in venv
-            const isWindows = process.platform === 'win32';
-            const pipPath = isWindows 
-                ? path.join(ROOT_DIR, 'ai_engine', '.venv', 'Scripts', 'pip.exe')
-                : path.join(ROOT_DIR, 'ai_engine', '.venv', 'bin', 'pip');
-            
-            console.log("📦 Installing dependencies in venv...");
-            const { stdout: pipOutput, stderr: pipError } = await execPromise(
-                `"${pipPath}" install -r ai_engine/requirements.txt`,
-                { timeout: 120000 }
-            );
-            console.log("✅ Dependencies installed:", pipOutput);
-            if (pipError) {
-                console.log("⚠️ Pip stderr:", pipError);
+            if (useVenv) {
+                // Install dependencies in venv
+                const pipPath = isWindows 
+                    ? path.join(ROOT_DIR, 'ai_engine', '.venv', 'Scripts', 'pip.exe')
+                    : path.join(ROOT_DIR, 'ai_engine', '.venv', 'bin', 'pip');
+                
+                // Check if pip exists in venv
+                if (fs.existsSync(pipPath)) {
+                    console.log("📦 Installing dependencies in venv...");
+                    const pipCommand = `"${pipPath}" install -r ai_engine/requirements.txt`;
+                    const { stdout: pipOutput, stderr: pipError } = await execPromise(
+                        pipCommand,
+                        { timeout: 120000 }
+                    );
+                    console.log("✅ Dependencies installed:", pipOutput);
+                    if (pipError) {
+                        console.log("⚠️ Pip stderr:", pipError);
+                    }
+                } else {
+                    console.log("⚠️ Pip not found in venv, will use system Python");
+                    useVenv = false;
+                }
             }
         } catch (pipError) {
-            console.error("❌ Python setup failed:", pipError.message);
+            console.error("❌ Python setup failed, will use system Python:", pipError.message);
             console.error("❌ Full error:", pipError);
-            // Continue even if setup fails
+            useVenv = false;
         }
         
         const { targetPath } = await cloneRepository(url, jobId);
@@ -163,18 +186,26 @@ export default async function processRepo(url, jobId) {
         console.log("📂 .venv/bin exists:", fs.existsSync(path.join(ROOT_DIR, 'ai_engine', '.venv', 'bin')));
         
         // --- THE VIRTUAL ENVIRONMENT PATHS ---
-        // Always use venv since we just created/verified it
-        const isWindows = process.platform === 'win32';
+        // Use venv if available and working, otherwise fallback to system Python
         const venvPythonPath = isWindows 
             ? path.join(ROOT_DIR, 'ai_engine', '.venv', 'Scripts', 'python.exe')
             : path.join(ROOT_DIR, 'ai_engine', '.venv', 'bin', 'python');
         
-        const pythonPath = venvPythonPath;
+        // Use venv Python if available and venv was successfully set up
+        if (useVenv && fs.existsSync(venvPythonPath)) {
+            pythonPath = venvPythonPath;
+            console.log("🐍 Using venv Python:", pythonPath);
+        } else {
+            // Fallback to system Python
+            pythonPath = isWindows ? 'python' : 'python3';
+            console.log("🐍 Using system Python:", pythonPath);
+            console.log("⚠️ Make sure dependencies are installed system-wide:");
+            console.log("   pip install -r ai_engine/requirements.txt");
+        }
         
         console.log("🐍 Platform:", process.platform);
         console.log("🐍 Venv Python path:", venvPythonPath);
         console.log("🐍 Venv Python exists:", fs.existsSync(venvPythonPath));
-        console.log("🐍 Using Python:", pythonPath);
         //pythonScriptPath is a path to processor.py 
         const pythonScriptPath = path.join(ROOT_DIR, 'ai_engine', 'processor.py');
         console.log("📜 Processor script path:", pythonScriptPath);
