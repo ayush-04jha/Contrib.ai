@@ -6,8 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "dev": "nodemon index.js --ignore temp/",
-    "prestart": "pip install -r ../ai_engine/requirements.txt || pip3 install -r ../ai_engine/requirements.txt || echo 'Python dependencies installation failed, will try later'"
+    "dev": "nodemon index.js --ignore temp/"
   },
   "keywords": [],
   "author": "",

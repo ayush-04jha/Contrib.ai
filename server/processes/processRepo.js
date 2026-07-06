@@ -108,6 +108,7 @@ export default async function processRepo(url, jobId) {
         let useVenv = false;
         let pythonPath = 'python3';
         const isWindows = process.platform === 'win32';
+        const requirementsPath = path.join(ROOT_DIR, 'ai_engine', 'requirements.txt');
         
         try {
             // Check if venv exists, if not create it
@@ -115,15 +116,27 @@ export default async function processRepo(url, jobId) {
             if (!fs.existsSync(venvPath)) {
                 console.log("🔧 Creating virtual environment...");
                 try {
+                    // For Debian-based systems (like Render), use ensurepip flag
                     const venvCommand = isWindows 
                         ? `python -m venv "${venvPath}"`
-                        : `python3 -m venv "${venvPath}"`;
+                        : `python3 -m venv --without-pip "${venvPath}" && "${venvPath}/bin/python" -m ensurepip --upgrade`;
                     await execPromise(venvCommand, { timeout: 120000 });
                     console.log("✅ Virtual environment created");
                     useVenv = true;
                 } catch (venvError) {
-                    console.error("⚠️ Failed to create venv, will use system Python:", venvError.message);
-                    useVenv = false;
+                    console.error("⚠️ Failed to create venv, trying without ensurepip:", venvError.message);
+                    try {
+                        // Fallback to standard venv creation
+                        const fallbackCommand = isWindows 
+                            ? `python -m venv "${venvPath}"`
+                            : `python3 -m venv "${venvPath}"`;
+                        await execPromise(fallbackCommand, { timeout: 120000 });
+                        console.log("✅ Virtual environment created (fallback)");
+                        useVenv = true;
+                    } catch (fallbackError) {
+                        console.error("⚠️ Failed to create venv, will use system Python:", fallbackError.message);
+                        useVenv = false;
+                    }
                 }
             } else {
                 console.log("✅ Virtual environment already exists");
@@ -139,7 +152,7 @@ export default async function processRepo(url, jobId) {
                 // Check if pip exists in venv
                 if (fs.existsSync(pipPath)) {
                     console.log("📦 Installing dependencies in venv...");
-                    const pipCommand = `"${pipPath}" install -r ai_engine/requirements.txt`;
+                    const pipCommand = `"${pipPath}" install -r "${requirementsPath}"`;
                     const { stdout: pipOutput, stderr: pipError } = await execPromise(
                         pipCommand,
                         { timeout: 120000 }
