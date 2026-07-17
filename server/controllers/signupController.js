@@ -75,6 +75,9 @@ export const signup = async (req, res) => {
         );
 
         // Store refresh token in user document
+        if (!user.refreshTokens) {
+            user.refreshTokens = [];
+        }
         user.refreshTokens.push(refreshToken);
         await user.save();
 

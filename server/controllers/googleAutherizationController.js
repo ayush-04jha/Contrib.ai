@@ -57,6 +57,9 @@ export const googleAuthorization =async (req, res) => {
         );
 
         // Store refresh token in user document
+        if (!user.refreshTokens) {
+            user.refreshTokens = [];
+        }
         user.refreshTokens.push(refreshToken);
         await user.save();
 
@@ -83,7 +86,9 @@ export const googleAuthorization =async (req, res) => {
         
     } catch (e) {
        console.error('Google Auth Error:', e);
-        return res.status(500).json({ message: 'Authentication failed' });
+       console.error('Error details:', e.message);
+       console.error('Error stack:', e.stack);
+        return res.status(500).json({ message: 'Authentication failed', error: e.message });
     }
 
 
