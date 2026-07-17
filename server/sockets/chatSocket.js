@@ -28,10 +28,22 @@ export const chatHandler = (socket) => {
         { returnDocument: 'after' }
       );
       console.log("Updated conversation with user message, repoId:", updatedConversation?.repoId);
-      const response = await (axios.post(`${process.env.AI_ENGINE_URL || "http://localhost:8000"}/chat`, {
+      
+      const aiEngineUrl = `${process.env.AI_ENGINE_URL || "http://localhost:8000"}/chat`;
+      console.log("Calling AI Engine at:", aiEngineUrl);
+      
+      const response = await axios.post(aiEngineUrl, {
         querry: msg.querry,
         repo_id: msg.repoId
-      }))
+      }, {
+        timeout: 30000 // 30 second timeout
+      }).catch(err => {
+        console.error("AI Engine Error:", err.message);
+        if (err.code === 'ECONNREFUSED' || err.code === 'ECONNABORTED') {
+          throw new Error("AI service is currently unavailable. Please try again later.");
+        }
+        throw err;
+      });
       await Conversation.findByIdAndUpdate(
         msg.conversationId,
         {
@@ -51,8 +63,24 @@ export const chatHandler = (socket) => {
         ai_response: response.data.answer
       });
     } catch (err) {
-      console.error(err);
-      socket.emit("error", { message: "Server error" });
+      console.error("Chat Socket Error:", err);
+      const errorMessage = err.message || "Server error occurred";
+      socket.emit("error", { message: errorMessage });
+      
+      // Also add error message to conversation
+      if (msg.conversationId) {
+        await Conversation.findByIdAndUpdate(
+          msg.conversationId,
+          {
+            $push: {
+              messages: {
+                sender: "bot",
+                text: `Error: ${errorMessage}`,
+              },
+            },
+          }
+        );
+      }
     }
 
   })

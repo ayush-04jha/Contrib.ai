@@ -4,3 +4,7 @@ tree-sitter-python
 tree-sitter-javascript
 python-dotenv
 google-genai
+langchain
+langchain-google-genai
+langchain-mongodb
+langchain-core
