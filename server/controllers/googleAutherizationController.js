@@ -43,11 +43,36 @@ export const googleAuthorization =async (req, res) => {
                 expiresIn: "7d"
             }
         );
+
+        // Generate Refresh Token
+        const refreshToken = jwt.sign(
+            {
+                userId: user._id,
+                email: user.email
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: "30d"
+            }
+        );
+
+        // Store refresh token in user document
+        user.refreshTokens.push(refreshToken);
+        await user.save();
+
         res.cookie('token', myAppToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000,
+            path: '/'
+        });
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: 30 * 24 * 60 * 60 * 1000,
             path: '/'
         });
         return res.status(200).json({ 
